@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Status{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-secondary">Origem de Cliente</h3>
+
+        <div>
+            <a href="{% url 'origemcliente_novo' %}" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Incluir
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive shadow-sm bg-white p-3 rounded">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in origens %}
+                <tr data-id="{{ o.id }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ o.nome }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-center text-muted">
+                        Nenhuma origem cadastrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+document.querySelectorAll(".linha-status").forEach(linha => {
+    linha.addEventListener("dblclick", () => {
+        const id = linha.dataset.id;
+        window.location.href = `/configuracoes/origem/${id}/editar/`;
+    });
+});
+</script>
+
+{% endblock %}

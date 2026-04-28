@@ -1,0 +1,116 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Centerville - Proposta Técnica{% endblock %}</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+
+    <style>
+        .hover-card {
+            transition: transform 0.2s ease-in-out;
+        }
+        .hover-card:hover {
+            transform: scale(1.03);
+        }
+    </style>
+
+</head>
+<body>
+
+    {% include "modais/modais.html" %}
+    {% include 'navbar.html' %}
+
+    <!-- ============================================================= -->
+    <!-- BLOCO QUE LÊ AS MENSAGENS DO DJANGO E MOSTRA OS MODAIS BOOTSTRAP -->
+    <!-- ============================================================= -->
+
+    <style>
+        /* Popup maior para marcadores manuais */
+        .leaflet-popup-content {
+            min-width: 300px;
+        }
+
+        .popup-marcador-manual textarea {
+            font-size: 14px;
+        }
+    </style>
+    
+    {% if messages %}
+    <script id="modal-messages-data" type="application/json">
+    {
+        "messages": [
+            {% for message in messages %}
+                {"tag": "{{ message.tags }}", "text": "{{ message }}"}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    }
+    </script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const dataTag = document.getElementById("modal-messages-data");
+        const data = JSON.parse(dataTag.textContent);
+
+        data.messages.forEach(msg => {
+
+            // Modal específico de cliente excluído
+            if (msg.text === "cliente_excluido") {
+                new bootstrap.Modal(
+                    document.getElementById('clienteExcluidoModal')
+                ).show();
+            }
+
+            // Modal de sucesso ao salvar
+            else if (msg.tag === "success") {
+                new bootstrap.Modal(
+                    document.getElementById('salvoSucessoModal')
+                ).show();
+            }
+
+            // Modal de erro
+            else if (msg.tag === "error") {
+                document.getElementById("erroSalvarTexto").textContent = msg.text;
+                new bootstrap.Modal(
+                    document.getElementById('erroSalvarModal')
+                ).show();
+            }
+
+        });
+
+    });
+    </script>
+
+    {% endif %}
+    <!-- ============================================================= -->
+
+    <div class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% block scripts %}
+    <script src="{% static 'js/main.js' %}"></script>
+    {% endblock %}
+
+</body>
+</html>

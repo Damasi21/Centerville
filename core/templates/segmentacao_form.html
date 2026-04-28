@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Segmentação{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="fw-bold mb-3">
+        {% if modo == "editar" %}Editar Segmentação{% else %}Nova Segmentação{% endif %}
+    </h3>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Nome</label>
+        {{ form.nome }}
+
+        <div class="mt-4">
+            <button class="btn btn-primary">Salvar</button>
+            <a href="{% url 'segmentacao_list' %}" class="btn btn-secondary">Cancelar</a>
+
+            {% if modo == "editar" %}
+            <a href="{% url 'segmentacao_excluir' form.instance.id %}" class="btn btn-danger float-end">
+                Excluir
+            </a>
+            {% endif %}
+        </div>
+    </form>
+
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Segmentação{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-secondary">Segmentação</h3>
+
+        <div>
+            <a href="{% url 'segmentacao_novo' %}" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Incluir
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive shadow-sm bg-white p-3 rounded">
+        <table class="table table-hover" id="tabela-segmentacao">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for seg in segmentacoes %}
+                <tr class="linha-segmentacao" data-id="{{ seg.id }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ seg.nome }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2" class="text-center text-muted">Nenhuma segmentação cadastrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+document.querySelectorAll(".linha-segmentacao").forEach(linha => {
+    linha.addEventListener("dblclick", () => {
+        const id = linha.dataset.id;
+        window.location.href = `/configuracoes/segmentacao/${id}/editar/`;
+    });
+});
+</script>
+
+{% endblock %}

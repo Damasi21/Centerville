@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cliente - Cadastro{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="fw-bold mb-3">
+        {% if modo == "editar" %}
+            Editar Cliente
+        {% else %}
+            Novo Cliente
+        {% endif %}
+    </h3>
+
+    <form method="POST"
+      id="formCliente"
+      enctype="multipart/form-data"
+      {% if cliente %}data-cliente-id="{{ cliente.id }}"{% endif %}>
+
+        {% csrf_token %}
+
+        {# MOSTRAR ERROS DE VALIDAÇÃO DO DJANGO #}
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <strong>Erros ao salvar o cliente:</strong>
+            <ul class="mt-2 mb-0">
+                {% for field, errors in form.errors.items %}
+                    <li><b>{{ field }}:</b> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- ====================================================== -->
+        <!-- 1) DADOS PRINCIPAIS DO CLIENTE -->
+        <!-- ====================================================== -->
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light fw-bold">
+                Dados do Cliente
+            </div>
+
+            <div class="card-body">
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>CNPJ / CPF</label>
+                        <div class="input-group">
+                            {{ form.cnpj_cpf }}
+                            <button class="btn btn-outline-secondary" type="button" id="btnBuscarCNPJ">Buscar</button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Razão Social</label>
+                        {{ form.razao_social }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Nome Fantasia</label>
+                        {{ form.nome_fantasia }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>Nome Interno</label>
+                        {{ form.nome_interno }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Endereço</label>
+                        {{ form.endereco }}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>Número</label>
+                        {{ form.numero }}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>Complemento</label>
+                        {{ form.complemento }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label>Bairro</label>
+                        {{ form.bairro }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Cidade</label>
+                        {{ form.cidade }}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>Estado</label>
+                        {{ form.estado }}
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>CEP</label>
+                        {{ form.cep }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label>Segmentação</label>
+                        {{ form.segmentacao }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label>Origem</label>
+                        {{ form.origem }}
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-md-3">
+                        <label>Latitude</label>
+                        {{ form.latitude }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Longitude</label>
+                        {{ form.longitude }}
+                    </div>
+
+                    <div class="col-md-6 mt-4">
+                        <small class="text-muted">
+                            As coordenadas são preenchidas automaticamente <b>após salvar</b> (no backend).
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 2) CONTATOS / INFO ADICIONAIS / CRM -->
+        <!-- ============================================== -->
+
+        <div class="accordion-item mb-3">
+            <div class="accordion-header" onclick="toggleSection('contatos-bloco', this)">
+                <span class="toggle-icon">+</span> Contatos
+            </div>
+
+            <div id="contatos-bloco" class="accordion-content">
+
+                <h5 class="fw-bold mb-3">Contatos</h5>
+
+                <table class="table table-bordered" id="tabela-contatos">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome</th>
+                            <th>Telefone 1</th>
+                            <th>Telefone 2</th>
+                            <th>LinkedIn</th>
+                            <th>Email</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="lista-contatos">
+                        {% if cliente %}
+                            {% for c in cliente.contatos.all %}
+                            <tr>
+                                <td><input type="text" class="form-control nome" value="{{ c.nome }}"></td>
+                                <td><input type="text" class="form-control telefone1" value="{{ c.telefone1 }}"></td>
+                                <td><input type="text" class="form-control telefone2" value="{{ c.telefone2 }}"></td>
+                                <td><input type="url" class="form-control linkedin" value="{{ c.linkedin }}"></td>
+                                <td><input type="email" class="form-control email" value="{{ c.email }}"></td>
+                                <td><button type="button" class="btn btn-danger btn-sm" onclick="removerContato(this)">X</button></td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <button type="button"
+                        class="btn btn-outline-success"
+                        id="btnAddContato">
+                    + Adicionar Contato
+                </button>
+
+                <input type="hidden" id="contatos_json" name="contatos_json">
+
+            </div>
+        </div>
+
+        <div class="accordion-item mb-3">
+            <div class="accordion-header" onclick="toggleSection('info-adicionais', this)">
+                <span class="toggle-icon">+</span> Informações Adicionais
+            </div>
+
+            <div id="info-adicionais" class="accordion-content">
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>LinkedIn da Empresa</label>
+                        {{ form.linkedin }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label>Instagram da Empresa</label>
+                        {{ form.instagram }}
+                    </div>
+
+                </div>
+
+
+                {% if cliente %}
+                    <div class="row mt-2">
+                        <div class="col-md-4 d-flex">
+                            {% if cliente.linkedin %}
+                                <a href="{{ cliente.linkedin }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    Abrir LinkedIn
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-4 d-flex">
+                            {% if cliente.instagram %}
+                                <a href="{{ cliente.instagram }}" target="_blank" class="btn btn-outline-danger btn-sm">
+                                    Abrir Instagram
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <label>Indicação</label>
+
+                        <div class="input-group">
+                            <input type="text"
+                                id="indicacao_nome"
+                                class="form-control"
+                                placeholder="Selecione um cliente..."
+                                value="{% if cliente and cliente.indicacao %}{{ cliente.indicacao.nome_interno }}{% endif %}"
+                                readonly>
+
+                            <button class="btn btn-outline-secondary"
+                                    type="button"
+                                    id="btnBuscarIndicacao"
+                                    title="Buscar cliente">
+                                <i class="bi bi-search"></i>
+                            </button>
+
+                            <button class="btn btn-outline-danger"
+                                    type="button"
+                                    id="btnLimparIndicacao"
+                                    title="Limpar indicação">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <small class="text-muted">
+                            Opcional. Cliente que indicou este cadastro.
+                        </small>
+
+                        {{ form.indicacao }}
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary px-4 py-2"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalAnexosCliente">
+                        <i class="bi bi-paperclip me-2"></i>
+                        Anexos
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+
+        <div class="accordion-item mb-4">
+            <div class="accordion-header" onclick="toggleSection('obras-bloco', this)">
+                <span class="toggle-icon">+</span> Obras
+            </div>
+
+            <div id="obras-bloco" class="accordion-content">
+
+                {% if cliente %}
+                {% for obra in cliente.obras.all %}
+                    <div class="border rounded p-2 mb-2">
+                    <div class="fw-semibold">{{ obra.nome }}</div>
+                    <div class="small text-muted">
+                        {{ obra.cidade }}{% if obra.estado %} ({{ obra.estado }}){% endif %}
+                    </div>
+
+                    <div class="mt-2">
+                        <a class="btn btn-sm btn-outline-primary" href="/obras/{{ obra.id }}/">
+                        Abrir obra
+                        </a>
+                    </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">Nenhuma obra vinculada a este cliente.</p>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted mb-0">Salve o cliente para visualizar as obras vinculadas.</p>
+                {% endif %}
+
+            </div>
+        </div>
+
+
+
+        <!-- ==============CRM================================ -->
+
+
+        <div class="accordion-item mb-4">
+            <div class="accordion-header" onclick="toggleSection('crm-bloco', this)">
+                <span class="toggle-icon">+</span> CRM
+            </div>
+
+            <div id="crm-bloco" class="accordion-content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <label class="form-label fw-semibold">Observações de CRM</label>
+                        {{ form.observacoes_crm }}
+                        <small class="text-muted">
+                            Use este campo para descrever o cliente, o que ele faz, perfil de atuação e outras observações comerciais.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between align-items-center">
+
+            <!-- Botões da esquerda -->
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success" id="btnSalvar">Salvar</button>
+                <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
+            </div>
+
+            <!-- Botão Excluir (somente no modo edição) -->
+            {% if modo == "editar" %}
+                <a href="{% url 'cliente_excluir' cliente.id %}"
+                class="btn btn-danger"
+                onclick="return confirm('Tem certeza que deseja excluir este cliente?');">
+                    Excluir
+                </a>
+            {% endif %}
+        </div>
+
+
+
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+
+<style>
+.accordion-header {
+    font-weight: 600;
+    padding: 12px 18px;
+    background: #f8f9fa;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+}
+.accordion-header:hover {
+    background: #eef2f4;
+}
+.toggle-icon {
+    font-size: 20px;
+    margin-right: 10px;
+}
+.accordion-content {
+    display: none;
+    padding: 15px;
+    border-left: 2px solid #0d6efd;
+    margin-left: 12px;
+    margin-top: 10px;
+}
+</style>
+
+<script>
+function toggleSection(id, header) {
+    const bloco = document.getElementById(id);
+    const icon = header.querySelector(".toggle-icon");
+
+    if (bloco.style.display === "block") {
+        bloco.style.display = "none";
+        icon.textContent = "+";
+    } else {
+        bloco.style.display = "block";
+        icon.textContent = "-";
+    }
+}
+</script>
+
+<script src="{% static 'js/clientes.js' %}"></script>
+
+{% endblock %}

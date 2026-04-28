@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Obra - Cadastro{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h3 class="fw-bold mb-3">
+    {% if modo == "editar" %}Editar Obra{% else %}Nova Obra{% endif %}
+  </h3>
+
+  <form method="POST"
+      id="formObra"
+      {% if obra %}data-obra-id="{{ obra.id }}"{% endif %}>
+    {% csrf_token %}
+
+    {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Erros ao salvar a obra:</strong>
+        <ul class="mt-2 mb-0">
+          {% for field, errors in form.errors.items %}
+            <li><b>{{ field }}:</b> {{ errors|join:", " }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-light fw-bold">Dados da Obra</div>
+      <div class="card-body">
+
+        <div class="row mb-3 align-items-end">
+          <div class="col-md-6">
+            <label>Nome da Obra</label>
+            {{ form.nome }}
+          </div>
+
+          <div class="col-md-2">
+            <label class="d-block">&nbsp;</label>
+            <button type="button"
+                    class="btn btn-outline-secondary w-100"
+                    id="btnAbrirModalAnexosObra"
+                    {% if modo != "editar" %}disabled{% endif %}>
+              <i class="bi bi-paperclip me-1"></i> Anexo
+            </button>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label>Endereço</label>
+            {{ form.endereco }}
+          </div>
+          <div class="col-md-2">
+            <label>Número</label>
+            {{ form.numero }}
+          </div>
+          <div class="col-md-4">
+            <label>Bairro</label>
+            {{ form.bairro }}
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <label>Cidade</label>
+            {{ form.cidade }}
+          </div>
+          <div class="col-md-2">
+            <label>Estado</label>
+            {{ form.estado }}
+          </div>
+          <div class="col-md-3">
+            <label>CEP</label>
+            <div class="input-group">
+              {{ form.cep }}
+              <button class="btn btn-outline-secondary" type="button" id="btnBuscarCEP">
+                Buscar
+              </button>
+            </div>
+            <small class="text-muted">Busca automática via ViaCEP.</small>
+          </div>
+          <div class="row mb-2">
+            <div class="col-md-3">
+              <label>Latitude</label>
+              {{ form.latitude }}
+            </div>
+            <div class="col-md-3">
+              <label>Longitude</label>
+              {{ form.longitude }}
+            </div>
+            <div class="col-md-6 mt-4">
+              <small class="text-muted">
+              </small>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CLIENTES VINCULADOS À OBRA -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-header bg-light fw-bold">
+        Clientes envolvidos na obra
+      </div>
+
+      <div class="card-body">
+
+        <label class="form-label">Buscar Cliente</label>
+        <div class="input-group mb-3">
+          <input type="text" id="clienteBuscaTexto" class="form-control" placeholder="Clique na lupa para buscar..." readonly>
+          <button type="button"
+                  class="btn btn-outline-secondary"
+                  id="btnAbrirModalClientesObra"
+                  title="Buscar cliente">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+
+        <ul id="clientesSelecionadosObra" class="list-group mt-2"></ul>
+
+        <input type="hidden"
+              name="clientes_json"
+              id="clientes_json"
+              value='{{ clientes_iniciais_json|default:"[]" }}'>
+      </div>
+    </div>
+
+
+    <div class="d-flex justify-content-between">
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success">Salvar</button>
+        <a href="{% url 'cadastro_clientes' %}" class="btn btn-secondary">Cancelar</a>
+      </div>
+
+      {% if modo == "editar" %}
+        <a href="{% url 'obra_excluir' obra.id %}"
+           class="btn btn-danger"
+           onclick="return confirm('Tem certeza que deseja excluir esta obra?');">
+          Excluir
+        </a>
+      {% endif %}
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/obra.js' %}?v=2"></script>
+{% endblock %}

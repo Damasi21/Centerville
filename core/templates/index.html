@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Início - Centerville{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+
+
+    <!-- Primeira linha (3 colunas) -->
+    <div class="row justify-content-center mb-4">
+
+        <!-- Clientes -->
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'cadastro_clientes' %}" class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <img src="/media/cliente.png" alt="Clientes" class="img-fluid mb-3" style="max-height: 80px;">
+                        <h5 class="fw-bold">Cadastro de Clientes</h5>
+                        <p class="text-muted small mt-2">Gerencie os clientes e mantenha os dados atualizados.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Produtos -->
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'cadastro_produtos' %}" class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <img src="/media/produtos.png" alt="Produtos" class="img-fluid mb-3" style="max-height: 80px;">
+                        <h5 class="fw-bold">Cadastro de Produtos</h5>
+                        <p class="text-muted small mt-2">Cadastre produtos, aditivos e soluções técnicas.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'crm_list' %}" class="text-decoration-none">
+                <div class="card shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <img src="/media/crm.png" alt="Crm" class="img-fluid mb-3" style="max-height: 80px;">
+                        <h5 class="fw-bold">CRM</h5>
+                        <p class="text-muted small mt-2">Relacionamento com clientes</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    
+    <div class="row justify-content-center">
+        <!-- Proposta Técnica -->
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'proposta_tecnica' %}" class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <img src="/media/proposta.png" alt="Proposta Técnica" class="img-fluid mb-3" style="max-height: 80px;">
+                        <h5 class="fw-bold">Proposta Técnica</h5>
+                        <p class="text-muted small mt-2">Monte propostas com cálculos automáticos e comparativos.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+   
+        <!-- Mapa -->
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'mapa_clientes' %}" class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <img src="/media/mapa.png" alt="Mapa" class="img-fluid mb-3" style="max-height: 80px;">
+                        <h5 class="fw-bold">Mapa</h5>
+                        <p class="text-muted small mt-2">Visualize clientes e obras geograficamente.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Relatórios BI -->
+        <div class="col-md-4 mb-4">
+            <a href="#" class="text-decoration-none text-dark">
+                <div class="card shadow-sm border-0 h-100 hover-card">
+                    <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                        <img src="/media/relatorios.png" alt="Relatórios BI" class="img-fluid mb-3" style="max-height: 80px;">
+                        <h5 class="fw-bold">Relatórios BI</h5>
+                        <p class="text-muted small mt-2">Consulte gráficos e relatórios interativos de desempenho.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

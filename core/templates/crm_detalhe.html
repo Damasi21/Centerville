@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h4 class="fw-bold">CRM – {{ registro.cliente.nome_interno }}</h4>
+
+    <p><strong>Perfil:</strong> {{ registro.get_perfil_display }}</p>
+    <p><strong>Data:</strong> {{ registro.criado_em|date:"d/m/Y H:i" }}</p>
+
+    <hr>
+
+    <p>{{ registro.texto_gerado }}</p>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h4 class="fw-bold mb-3">Novo Registro de CRM</h4>
+
+    <!-- Seleção de cliente -->
+    <div class="mb-4">
+        <label class="form-label">Cliente</label>
+        <select id="cliente_id" class="form-select">
+            <option value="">Selecione um cliente</option>
+            {% for c in clientes %}
+                <option value="{{ c.id }}">{{ c.nome_interno }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Botões de perfil -->
+    <div class="mb-4">
+        <label class="form-label fw-bold">Modo de Atendimento</label>
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-success"
+                    onclick="selecionarModo('whatsapp')">
+                Envio via WhatsApp
+            </button>
+
+            <button id="btn-spin" type="button" class="btn btn-outline-primary">
+                SPIN
+            </button>
+        </div>
+    </div>
+
+    <div id="perfil-container" class="mb-4 d-none">
+        <label class="form-label fw-bold">Tipo de Cliente</label>
+        <div class="d-flex gap-2 flex-wrap">
+            <button class="btn btn-outline-primary"
+                    onclick="selecionarPerfil('executor')">
+                Executor de Piso
+            </button>
+
+            <button class="btn btn-outline-primary"
+                    onclick="selecionarPerfil('construtora')">
+                Construtora
+            </button>
+
+            <button class="btn btn-outline-primary"
+                    onclick="selecionarPerfil('concreteira')">
+                Concreteira
+            </button>
+
+            <button class="btn btn-outline-secondary"
+                    onclick="selecionarPerfil('outros')">
+                Outros
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Questionário dinâmico -->
+    <div id="questionario-container" class="mb-4"></div>
+
+    <!-- Ações -->
+    <div class="mt-4">
+        <a href="{% url 'crm_list' %}" class="btn btn-secondary">
+            Voltar
+        </a>
+        <!-- salvar vem depois -->
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/crm.js' %}"></script>
+{% endblock %}

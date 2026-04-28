@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Cadastro de Clientes - Centerville{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Cabeçalho da página -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-secondary">Cadastro</h3>
+
+        <div>
+            <button id="btnIncluir" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Incluir
+            </button>
+            <button id="btnImportar" class="btn btn-outline-secondary">
+                <i class="bi bi-upload"></i> Importar Planilha
+            </button>
+        </div>
+    </div>
+
+    <!-- Abas -->
+    <ul class="nav nav-tabs mb-3" id="cadastroTabs">
+        <li class="nav-item">
+            <button class="nav-link active" id="tab-clientes" data-bs-toggle="tab" data-bs-target="#aba-clientes">
+                Clientes
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="tab-obras" data-bs-toggle="tab" data-bs-target="#aba-obras">
+                Obras
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- ========================= -->
+        <!-- ABA CLIENTES (SUA TABELA) -->
+        <!-- ========================= -->
+        <div class="tab-pane fade show active" id="aba-clientes">
+
+            <div class="table-responsive shadow-sm rounded bg-white p-3">
+                <table class="table table-hover align-middle" id="tabela-clientes">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 55px;">#</th>
+                            <th>Tags</th>
+                            <th>CNPJ / CPF</th>
+                            <th>Nome Interno</th>
+                            <th>Nome Fantasia</th>
+                            <th>Cidade</th>
+                        </tr>
+
+                        <tr>
+                            <th style="width: 55px;">
+                                <input type="text" class="form-control form-control-sm filtro-coluna" data-col="0">
+                            </th>
+                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="1"></th>
+                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="2"></th>
+                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="3"></th>
+                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="4"></th>
+                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="5"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for c in clientes %}
+                        <tr class="linha-cliente"
+                            data-url="{% url 'cliente_editar' c.id %}"
+                            style="cursor: pointer;">
+
+                            <td>{{ forloop.counter }}</td>
+
+                            <td>
+                                {% for tag in c.segmentacao.all %}
+                                    <span class="badge bg-info text-dark">{{ tag.nome }}</span>
+                                {% endfor %}
+                            </td>
+
+                            <td>{{ c.cnpj_cpf }}</td>
+                            <td>{{ c.nome_interno }}</td>
+                            <td>{{ c.nome_fantasia }}</td>
+                            <td>{{ c.cidade }}{% if c.estado %} ({{ c.estado }}){% endif %}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">
+                                Nenhum cliente cadastrado ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+
+        <!-- ========================= -->
+        <!-- ABA OBRAS -->
+        <!-- ========================= -->
+        <div class="tab-pane fade" id="aba-obras">
+
+            <div class="table-responsive shadow-sm rounded bg-white p-3">
+                <table class="table table-hover align-middle" id="tabela-obras">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:60px">#</th>
+                            <th>Nome da Obra</th>
+                            <th>Cidade</th>
+                            <th>Clientes Envolvidos</th>
+                        </tr>
+
+                        <tr>
+                            <th style="width:60px"><input type="text" class="form-control form-control-sm filtro-obra" data-col="0"></th>
+                            <th><input type="text" class="form-control form-control-sm filtro-obra" data-col="1"></th>
+                            <th><input type="text" class="form-control form-control-sm filtro-obra" data-col="2"></th>
+                            <th><input type="text" class="form-control form-control-sm filtro-obra" data-col="3"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for o in obras %}
+                        <tr class="linha-obra"
+                            data-url="{% url 'obra_editar' o.id %}"
+                            style="cursor:pointer;">
+
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ o.nome }}</td>
+                            <td>{{ o.cidade }} ({{ o.estado }})</td>
+                            <td>
+                                {% for c in o.clientes.all %}
+                                    <span class="badge bg-secondary">{{ c.nome_interno }}</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                Nenhuma obra cadastrada ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+
+<script>
+document.querySelectorAll('.filtro-coluna').forEach(input => {
+    input.addEventListener('keyup', function () {
+
+        const col = this.dataset.col;
+        const termo = this.value.toLowerCase();
+
+        const linhas = document.querySelectorAll('#tabela-clientes tbody tr');
+
+        linhas.forEach(linha => {
+            const celula = linha.querySelectorAll('td')[col];
+
+            if (!celula) return;
+
+            const texto = celula.textContent.toLowerCase();
+
+            if (texto.includes(termo)) {
+                linha.style.display = "";
+            } else {
+                linha.style.display = "none";
+            }
+        });
+
+    });
+});
+</script>
+
+<script>
+document.querySelectorAll('.filtro-obra').forEach(input => {
+    input.addEventListener('keyup', function () {
+
+        const col = this.dataset.col;
+        const termo = this.value.toLowerCase();
+
+        const linhas = document.querySelectorAll('#tabela-obras tbody tr');
+
+        linhas.forEach(linha => {
+            const celula = linha.querySelectorAll('td')[col];
+            if (!celula) return;
+
+            const texto = celula.textContent.toLowerCase();
+            linha.style.display = texto.includes(termo) ? "" : "none";
+        });
+
+    });
+});
+</script>
+
+
+<script>
+document.querySelectorAll('.linha-cliente').forEach(function(linha) {
+    linha.addEventListener('click', function() {
+        window.location.href = this.dataset.url;
+    });
+});
+</script>
+
+
+<script src="{% static 'js/clientes.js' %}"></script>
+
+
+<script>
+// mesma lógica de máscara
+function formatarCnpjCpf(valor) {
+    valor = valor.replace(/\D/g, "");
+
+    if (valor.length <= 11) {
+        // CPF
+        valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+        valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+        valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    } else {
+        // CNPJ
+        valor = valor.replace(/^(\d{2})(\d)/, "$1.$2");
+        valor = valor.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+        valor = valor.replace(/\.(\d{3})(\d)/, ".$1/$2");
+        valor = valor.replace(/(\d{4})(\d)/, "$1-$2");
+    }
+
+    return valor;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // pega a 3ª coluna (CNPJ/CPF) da tabela
+    document
+        .querySelectorAll("#tabela-clientes tbody tr td:nth-child(3)")
+        .forEach(td => {
+            const bruto = td.textContent.trim();
+            const limpo = bruto.replace(/\D/g, "");
+            if (!limpo) return;
+            td.textContent = formatarCnpjCpf(limpo);
+        });
+});
+</script>
+
+
+{% endblock %}

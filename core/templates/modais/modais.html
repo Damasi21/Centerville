@@ -1,0 +1,392 @@
+<!-- MODAL: Confirmar salvamento -->
+<div class="modal fade" id="confirmarSalvarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Salvamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Deseja realmente salvar este cliente?
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Não
+                </button>
+
+                <button type="button" id="btnConfirmarSalvar" class="btn btn-success">
+                    Sim
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL: Sucesso ao salvar -->
+<div class="modal fade" id="salvoSucessoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-success">
+
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Sucesso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                O cliente foi salvo com sucesso!
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Erro ao salvar -->
+<div class="modal fade" id="erroSalvarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Erro</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="erroSalvarTexto">
+                Ocorreu um erro ao salvar o cliente.
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Fechar</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Cliente excluído -->
+<div class="modal fade" id="clienteExcluidoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Cliente Excluído</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                O cliente foi excluído com sucesso.
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal para confirmar criação do marcador no mapa -->
+<div class="modal fade" id="modalNovoMarcador" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">Novo Marcador</h5>
+            </div>
+
+            <div class="modal-body">
+                <p>Deseja colocar um marcador neste ponto?</p>
+                <input type="hidden" id="novoLat">
+                <input type="hidden" id="novoLon">
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button class="btn btn-primary" id="btnConfirmarNovoMarcador">Sim</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAnexosCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+                <h5 class="modal-title">Anexos do Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Adicionar novo anexo</label>
+                    <input type="file" class="form-control" id="inputAnexo">
+                </div>
+
+                <div class="mb-4 text-end">
+                    <button type="button"
+                            class="btn btn-primary"
+                            id="btnAdicionarAnexo">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Adicionar
+                    </button>
+                </div>
+
+
+                <hr>
+
+                <!-- Lista de anexos -->
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Arquivo</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-anexos">
+                            {% if cliente %}
+                                {% for a in cliente.anexos.all %}
+                                    <tr data-anexo-id="{{ a.id }}">
+                                        <td>{{ a.nome_original }}</td>
+                                        <td class="text-center">
+
+                                            <a class="btn btn-outline-primary btn-sm me-1"
+                                                href="{{ a.arquivo.url }}"
+                                                target="_blank"
+                                                title="Visualizar anexo">
+                                                    <i class="bi bi-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-success btn-sm me-1" title="Enviar pelo WhatsApp">
+                                                <i class="bi bi-whatsapp"></i>
+                                            </button>
+
+                                            <a class="btn btn-outline-secondary btn-sm me-1" href="{{ a.arquivo.url }}" download>
+                                                <i class="bi bi-download"></i>
+                                            </a>
+
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-sm btn-excluir-anexo"
+                                                    title="Excluir anexo">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-muted">Nenhum anexo cadastrado.</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-muted">Salve o cliente para anexar arquivos.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fechar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL: Buscar Indicação -->
+<div class="modal fade" id="modalBuscarIndicacao" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Buscar cliente para Indicação</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <input type="text"
+                 id="buscaIndicacao"
+                 class="form-control"
+                 placeholder="Digite nome, razão social, CNPJ/CPF, cidade...">
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Cliente</th>
+                <th>CNPJ/CPF</th>
+                <th>Cidade</th>
+                <th class="text-end">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="listaIndicacaoResultados">
+              <tr>
+                <td colspan="4" class="text-muted">Digite para buscar...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL: Selecionar Cliente para Obra -->
+<div class="modal fade" id="modalSelecionarClienteObra" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Selecionar Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="input-group mb-3">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" id="buscaClienteObra" placeholder="Digite nome, fantasia ou razão social...">
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Cliente</th>
+                <th>Segmentação</th>
+                <th class="text-end">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="listaClientesModalObra">
+              <tr>
+                <td colspan="3" class="text-muted">Digite para buscar...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ANEXO DE OBRA  -->
+
+<div class="modal fade" id="modalAnexosObra" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Anexos da Obra</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Adicionar novo anexo</label>
+                    <input type="file" class="form-control" id="inputAnexoObra">
+                </div>
+
+                <div class="mb-4 text-end">
+                    <button type="button"
+                            class="btn btn-primary"
+                            id="btnAdicionarAnexoObra">
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Adicionar
+                    </button>
+                </div>
+
+                <hr>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Arquivo</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-anexos-obra">
+                            {% if obra %}
+                                {% for a in obra.anexos.all %}
+                                    <tr data-anexo-id="{{ a.id }}">
+                                        <td>{{ a.nome_original }}</td>
+                                        <td class="text-center">
+
+                                            <a class="btn btn-outline-primary btn-sm me-1"
+                                                href="{{ a.arquivo.url }}"
+                                                target="_blank"
+                                                title="Visualizar anexo">
+                                                    <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a class="btn btn-outline-secondary btn-sm me-1" href="{{ a.arquivo.url }}" download>
+                                                <i class="bi bi-download"></i>
+                                            </a>
+
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-sm btn-excluir-anexo-obra"
+                                                    title="Excluir anexo">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="2" class="text-muted">Nenhum anexo cadastrado.</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-muted">Salve a obra para anexar arquivos.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fechar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

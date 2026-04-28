@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}CRM{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3">
+  <div class="row g-3">
+
+    <!-- ESQUERDA (33%): WHATSAPP -->
+    <div class="col-md-4">
+      <div class="border p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0">WhatsApp</h5>
+          <button class="btn btn-outline-success btn-sm" id="btnAtualizarWpp">Atualizar</button>
+        </div>
+
+        <input class="form-control mb-3" id="buscaContatos" placeholder="Pesquisar conversa (nome, telefone, texto) ...">
+
+        <div id="listaConversas" class="d-flex flex-column gap-2"></div>
+      </div>
+    </div>
+
+    <!-- DIREITA (67%): AÇÕES + TIMELINE -->
+    <div class="col-md-8">
+      <div class="border p-3 h-100">
+
+        <!-- Botões lineares (topo) -->
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button class="btn btn-outline-success" id="btnPropostas">PROPOSTA</button>
+          <button class="btn btn-outline-success" id="btnForms">FORMS</button>
+          <button class="btn btn-outline-success" id="btnTarefas">TAREFAS</button>
+          <button class="btn btn-outline-success" id="btnOutros">OUTROS</button>
+        </div>
+
+        <!-- Busca por cliente na timeline -->
+        <input class="form-control mb-3" id="buscaClienteTimeline" placeholder="Buscar cliente na timeline ...">
+
+        <div class="text-center fw-bold my-2">TIMELINE</div>
+
+        <div id="timelineAtividades" class="d-flex flex-column gap-2"
+             style="max-height: 620px; overflow:auto;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL: Conversa completa -->
+<div class="modal fade" id="modalConversa" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalConversaTitulo">Conversa</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalConversaBody" style="min-height: 200px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Visualizar atividade da timeline -->
+<div class="modal fade" id="modalAtividade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalAtividadeTitulo">Atividade</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalAtividadeBody"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/whats.js' %}"></script>
+{% endblock %}
