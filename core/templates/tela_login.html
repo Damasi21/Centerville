@@ -29,7 +29,7 @@
     body {
       min-height: 100vh;
       font-family: "Montserrat", sans-serif;
-      color: #111111;
+      color: var(--white);
       background:
         radial-gradient(circle at 50% 15%, rgba(215, 167, 63, 0.22), transparent 28%),
         linear-gradient(135deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%) 0 0 / 28px 28px,
@@ -117,6 +117,7 @@
     }
 
     .member-title {
+      color: var(--gold-light);
       font-size: 1.24rem;
       line-height: 1;
       text-transform: uppercase;
@@ -156,10 +157,14 @@
       display: grid;
       grid-template-columns: 48px 1fr;
       align-items: center;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(190, 197, 207, 0.94);
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
       transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
       overflow: hidden;
+    }
+
+    .input-wrap.password-wrap {
+      grid-template-columns: 48px 1fr 48px;
     }
 
     .input-wrap:focus-within {
@@ -176,7 +181,7 @@
       border-radius: 50%;
       display: grid;
       place-items: center;
-      color: var(--white);
+      color: #343029;
     }
 
     .input-icon svg {
@@ -203,14 +208,37 @@
     .input-wrap input:-webkit-autofill,
     .input-wrap input:-webkit-autofill:hover,
     .input-wrap input:-webkit-autofill:focus {
-      -webkit-text-fill-color: #111111;
-      caret-color: #111111;
-      box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.2) inset;
+      -webkit-text-fill-color: #343029;
+      caret-color: #343029;
+      box-shadow: 0 0 0 1000px rgba(190, 197, 207, 0.94) inset;
       transition: background-color 9999s ease-in-out 0s;
     }
 
     .input-wrap input::placeholder {
-      color: rgba(247, 242, 232, 0.86);
+      color: rgba(52, 48, 41, 0.72);
+    }
+
+    .password-toggle {
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: #343029;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: color 180ms ease, transform 180ms ease;
+    }
+
+    .password-toggle:hover {
+      color: var(--gold-dark);
+      transform: scale(1.06);
+    }
+
+    .password-toggle svg {
+      width: 20px;
+      height: 20px;
     }
 
     .form-row {
@@ -371,14 +399,20 @@
           <input type="text" name="username" autocomplete="username" placeholder="Username" required>
         </label>
 
-        <label class="input-wrap">
+        <label class="input-wrap password-wrap">
           <span class="input-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="10" rx="2"></rect>
               <path d="M7 11V8a5 5 0 0 1 10 0v3"></path>
             </svg>
           </span>
-          <input type="password" name="password" autocomplete="current-password" placeholder="Password" required>
+          <input id="passwordInput" type="password" name="password" autocomplete="current-password" placeholder="Password" required>
+          <button class="password-toggle" type="button" id="passwordToggle" aria-label="Mostrar senha">
+            <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
         </label>
 
         <div class="form-row">
@@ -402,5 +436,19 @@
       </div>
     </section>
   </main>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const passwordInput = document.getElementById("passwordInput");
+      const passwordToggle = document.getElementById("passwordToggle");
+
+      if (!passwordInput || !passwordToggle) return;
+
+      passwordToggle.addEventListener("click", () => {
+        const showing = passwordInput.type === "text";
+        passwordInput.type = showing ? "password" : "text";
+        passwordToggle.setAttribute("aria-label", showing ? "Mostrar senha" : "Ocultar senha");
+      });
+    });
+  </script>
 </body>
 </html>
