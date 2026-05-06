@@ -5,6 +5,7 @@ from django.forms import inlineformset_factory
 from .models import Contato
 from django.core.exceptions import ValidationError
 from .models import Cliente, Obra
+from django.contrib.auth.models import User
 
 
 
@@ -149,6 +150,75 @@ class OrigemClienteForm(forms.ModelForm):
         widgets = {
             "nome": forms.TextInput(attrs={"class": "form-control"}),
         }
+
+
+class UsuarioForm(forms.ModelForm):
+    password1 = forms.CharField(
+        label="Senha",
+        required=False,
+        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"})
+    )
+    password2 = forms.CharField(
+        label="Confirmar senha",
+        required=False,
+        widget=forms.PasswordInput(attrs={"class": "form-control", "autocomplete": "new-password"})
+    )
+
+    class Meta:
+        model = User
+        fields = ["username", "first_name", "last_name", "email", "is_active"]
+        labels = {
+            "username": "Usuario",
+            "first_name": "Nome",
+            "last_name": "Sobrenome",
+            "email": "E-mail",
+            "is_active": "Ativo",
+        }
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control", "autocomplete": "username"}),
+            "first_name": forms.TextInput(attrs={"class": "form-control"}),
+            "last_name": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+    def clean_username(self):
+        username = self.cleaned_data["username"].strip()
+        qs = User.objects.filter(username__iexact=username)
+
+        if self.instance and self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+
+        if qs.exists():
+            raise ValidationError("Ja existe um usuario com este login.")
+
+        return username
+
+    def clean(self):
+        cleaned = super().clean()
+        password1 = cleaned.get("password1")
+        password2 = cleaned.get("password2")
+
+        if not self.instance.pk and not password1:
+            self.add_error("password1", "Informe uma senha para o novo usuario.")
+
+        if password1 or password2:
+            if password1 != password2:
+                self.add_error("password2", "As senhas nao conferem.")
+
+        return cleaned
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        password = self.cleaned_data.get("password1")
+
+        if password:
+            usuario.set_password(password)
+
+        if commit:
+            usuario.save()
+
+        return usuario
 
 #---------------------------------CONTATOS DE CLIENTES--------------------------------------------------------
 

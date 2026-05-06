@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="fw-bold mb-3">
+        {% if modo == "editar" %}Editar Usuario{% else %}Novo Usuario{% endif %}
+    </h3>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Corrija os campos abaixo:</strong>
+                <ul class="mt-2 mb-0">
+                    {% for field, errors in form.errors.items %}
+                        <li><b>{{ field }}:</b> {{ errors|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if primeiro_usuario %}
+            <div class="alert alert-warning">
+                Este sera o primeiro usuario do sistema e sera criado como Admin automaticamente.
+            </div>
+        {% endif %}
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label">Usuario</label>
+                {{ form.username }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Nome</label>
+                {{ form.first_name }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sobrenome</label>
+                {{ form.last_name }}
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">E-mail</label>
+                {{ form.email }}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Senha</label>
+                {{ form.password1 }}
+                {% if modo == "editar" %}
+                    <small class="text-muted">Deixe em branco para manter a senha atual.</small>
+                {% endif %}
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Confirmar senha</label>
+                {{ form.password2 }}
+            </div>
+        </div>
+
+        <div class="d-flex gap-4 mb-4">
+            <div class="form-check">
+                {{ form.is_active }}
+                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                    Ativo
+                </label>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <button class="btn btn-primary">Salvar</button>
+            <a href="{% url 'usuario_list' %}" class="btn btn-secondary">Cancelar</a>
+
+            {% if modo == "editar" %}
+            <a href="{% url 'usuario_excluir' usuario.id %}"
+               class="btn btn-danger float-end"
+               onclick="return confirm('Tem certeza que deseja excluir este usuario?');">
+                Excluir
+            </a>
+            {% endif %}
+        </div>
+    </form>
+
+</div>
+{% endblock %}

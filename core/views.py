@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from .models import Cliente, Contato, Segmentacao, OrigemCliente
-from .forms import ClienteForm, SegmentacaoForm, OrigemClienteForm
+from .forms import ClienteForm, SegmentacaoForm, OrigemClienteForm, UsuarioForm
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 import requests
 import json
 import re
@@ -17,8 +19,41 @@ from django.db.models import Q
 from .models import Obra,ObraCliente
 from .forms import ObraForm
 from .models import AnexoObra
+from django.utils.http import url_has_allowed_host_and_scheme
 def index(request):
     return render(request, "index.html")
+
+
+def tela_login(request):
+    if request.user.is_authenticated:
+        return redirect("index")
+
+    can_create_first_user = not User.objects.exists()
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        next_url = request.POST.get("next") or request.GET.get("next")
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            if not request.POST.get("remember"):
+                request.session.set_expiry(0)
+
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+
+            return redirect("index")
+
+        messages.error(request, "Usuario ou senha invalidos.")
+
+    return render(request, "tela_login.html", {"can_create_first_user": can_create_first_user})
+
+
+def sair(request):
+    logout(request)
+    return redirect("tela_login")
 
 #--------------------------------------------------------------
 # LISTAGEM DE CLIENTES
@@ -514,6 +549,120 @@ def origemcliente_excluir(request, id):
     origem = get_object_or_404(OrigemCliente, id=id)
     origem.delete()
     return redirect("origemcliente_list")
+
+
+#--------------------------------------------------------------
+# USUARIOS CRUD
+#--------------------------------------------------------------
+def usuario_admin_principal():
+    return User.objects.order_by("id").first()
+
+
+def usuario_requer_superuser(request):
+    admin = usuario_admin_principal()
+
+    if admin and request.user.id != admin.id:
+        messages.error(request, "Apenas o usuario Admin pode gerenciar usuarios.")
+        return redirect("configuracoes")
+
+    return None
+
+
+def usuario_list(request):
+    bloqueio = usuario_requer_superuser(request)
+    if bloqueio:
+        return bloqueio
+
+    usuarios = User.objects.all().order_by("username")
+    admin = usuario_admin_principal()
+    return render(request, "usuario_list.html", {
+        "usuarios": usuarios,
+        "admin_principal_id": admin.id if admin else None,
+    })
+
+
+def usuario_novo(request):
+    bloqueio = usuario_requer_superuser(request)
+    if bloqueio:
+        return bloqueio
+
+    primeiro_usuario = not User.objects.exists()
+
+    if request.method == "POST":
+        form = UsuarioForm(request.POST)
+        if form.is_valid():
+            usuario = form.save()
+
+            if primeiro_usuario:
+                usuario.is_superuser = True
+                usuario.is_staff = True
+                login(request, usuario, backend="django.contrib.auth.backends.ModelBackend")
+            else:
+                usuario.is_superuser = False
+                usuario.is_staff = False
+
+            usuario.save()
+
+            messages.success(request, "Usuario cadastrado com sucesso!")
+            return redirect("usuario_list")
+    else:
+        form = UsuarioForm(initial={"is_active": True})
+
+    return render(request, "usuario_form.html", {
+        "form": form,
+        "modo": "novo",
+        "primeiro_usuario": primeiro_usuario,
+    })
+
+
+def usuario_editar(request, id):
+    bloqueio = usuario_requer_superuser(request)
+    if bloqueio:
+        return bloqueio
+
+    usuario = get_object_or_404(User, id=id)
+
+    if request.method == "POST":
+        form = UsuarioForm(request.POST, instance=usuario)
+        if form.is_valid():
+            usuario = form.save()
+            admin = usuario_admin_principal()
+
+            if admin and usuario.id == admin.id:
+                usuario.is_superuser = True
+                usuario.is_staff = True
+            else:
+                usuario.is_superuser = False
+                usuario.is_staff = False
+
+            usuario.save()
+            messages.success(request, "Usuario atualizado com sucesso!")
+            return redirect("usuario_list")
+    else:
+        form = UsuarioForm(instance=usuario)
+
+    return render(request, "usuario_form.html", {"form": form, "modo": "editar", "usuario": usuario})
+
+
+def usuario_excluir(request, id):
+    bloqueio = usuario_requer_superuser(request)
+    if bloqueio:
+        return bloqueio
+
+    usuario = get_object_or_404(User, id=id)
+    admin = usuario_admin_principal()
+
+    if admin and usuario.id == admin.id:
+        messages.error(request, "O usuario Admin principal nao pode ser excluido.")
+        return redirect("usuario_list")
+
+    if request.user.id == usuario.id:
+        messages.error(request, "Voce nao pode excluir o usuario que esta usando agora.")
+        return redirect("usuario_list")
+
+    usuario.delete()
+    messages.success(request, "Usuario excluido com sucesso!")
+    return redirect("usuario_list")
 
 #--------------------------------------------------------------
 # BUSCAR CNPJ VIA API

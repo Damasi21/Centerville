@@ -4,6 +4,8 @@ from .views import api_clientes_mapa
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path("login/", views.tela_login, name="tela_login"),
+    path("sair/", views.sair, name="sair"),
 
 
 #---------------------------------CLIENTES-------------------------------------------------
@@ -57,6 +59,12 @@ urlpatterns = [
     path("configuracoes/origem/novo/", views.origemcliente_novo, name="origemcliente_novo"),
     path("configuracoes/origem/<int:id>/editar/", views.origemcliente_editar, name="origemcliente_editar"),
     path("configuracoes/origem/<int:id>/excluir/", views.origemcliente_excluir, name="origemcliente_excluir"),
+
+    # usuarios
+    path("configuracoes/usuarios/", views.usuario_list, name="usuario_list"),
+    path("configuracoes/usuarios/novo/", views.usuario_novo, name="usuario_novo"),
+    path("configuracoes/usuarios/<int:id>/editar/", views.usuario_editar, name="usuario_editar"),
+    path("configuracoes/usuarios/<int:id>/excluir/", views.usuario_excluir, name="usuario_excluir"),
 
 #----------------------------------------------------------------------------------------
 
