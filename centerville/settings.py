@@ -15,10 +15,11 @@ SECRET_KEY = 'django-insecure-pd2*r5g4kw9z+m^nn=dlnwods5l9@uvsivk=2oxsq$2svijmu3
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    "tech4con.online",
+    "www.tech4con.online",
     "127.0.0.1",
     "localhost",
     "host.docker.internal",
-    "192.168.65.254",  # IP que apareceu no seu teste
 ]
 
 
@@ -109,11 +110,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
 STATICFILES_DIRS = [
-    BASE_DIR / "static",   # aqui entra sua pasta /static/js
+    BASE_DIR / "static",
 ]
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 MEDIA_URL = '/media/'
+
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Default primary key field type

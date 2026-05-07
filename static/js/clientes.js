@@ -24,6 +24,34 @@ function aplicarMascaraCnpjCpf(valor) {
 // DOMContentLoaded — CÓDIGO PRINCIPAL
 // ============================================================
 document.addEventListener("DOMContentLoaded", () => {
+    // -------------------------------------------
+    // FILTROS DA LISTAGEM DE CLIENTES
+    // -------------------------------------------
+    document.querySelectorAll(".filtro-coluna").forEach(input => {
+        input.addEventListener("keyup", function () {
+            filtrarTabela("#tabela-clientes", this.dataset.col, this.value);
+        });
+    });
+
+    // -------------------------------------------
+    // FILTROS DA LISTAGEM DE OBRAS
+    // -------------------------------------------
+    document.querySelectorAll(".filtro-obra").forEach(input => {
+        input.addEventListener("keyup", function () {
+            filtrarTabela("#tabela-obras", this.dataset.col, this.value);
+        });
+    });
+
+    // -------------------------------------------
+    // FORMATA CNPJ/CPF NA TABELA DE CLIENTES
+    // -------------------------------------------
+    document
+        .querySelectorAll("#tabela-clientes tbody tr td:nth-child(3)")
+        .forEach(td => {
+            const bruto = td.textContent.trim();
+            const limpo = bruto.replace(/\D/g, "");
+            if (limpo) td.textContent = aplicarMascaraCnpjCpf(limpo);
+        });
 
     // -------------------------------------------
     // BOTÃO INCLUIR (CLIENTES x OBRAS por aba ativa)
@@ -43,18 +71,20 @@ document.addEventListener("DOMContentLoaded", () => {
             // Caso 1: existem abas (cadastro com 2 tabs)
             if (tabClientes && tabObras) {
                 if (tabClientes.classList.contains("active")) {
-                    window.location.href = "/clientes/novo/";
+                    window.location.href = btnIncluir.dataset.clienteUrl || "/clientes/novo/";
                     return;
                 }
                 if (tabObras.classList.contains("active")) {
-                    window.location.href = "/obras/novo/";
+                    window.location.href = btnIncluir.dataset.obraUrl || "/obras/novo/";
                     return;
                 }
             }
 
         // Caso 2: não existem abas ainda -> mostra 2 opções
         const irParaObra = confirm("Deseja incluir uma OBRA?\n\nOK = Obra\nCancelar = Cliente");
-        window.location.href = irParaObra ? "/obras/novo/" : "/clientes/novo/";
+        window.location.href = irParaObra
+            ? (btnIncluir.dataset.obraUrl || "/obras/novo/")
+            : (btnIncluir.dataset.clienteUrl || "/clientes/novo/");
     });
 }
 
@@ -63,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // CLICK PARA EDITAR (CLIENTES) - usa data-url
     // -------------------------------------------
     document.querySelectorAll(".linha-cliente").forEach((linha) => {
-        linha.addEventListener("click", function () {
+        linha.addEventListener("dblclick", function () {
             const url = this.dataset.url;
             if (url) window.location.href = url;
         });
@@ -73,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // CLICK PARA EDITAR (OBRAS) - usa data-url
     // -------------------------------------------
     document.querySelectorAll(".linha-obra").forEach((linha) => {
-        linha.addEventListener("click", function () {
+        linha.addEventListener("dblclick", function () {
             const url = this.dataset.url;
             if (url) window.location.href = url;
         });
@@ -426,6 +456,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 }); // fim do DOMContentLoaded
+
+// -------------------------------------------
+// FILTRAR TABELAS POR COLUNA
+// -------------------------------------------
+function filtrarTabela(seletorTabela, coluna, termo) {
+    const termoNormalizado = (termo || "").toLowerCase();
+    const linhas = document.querySelectorAll(`${seletorTabela} tbody tr`);
+
+    linhas.forEach(linha => {
+        const celula = linha.querySelectorAll("td")[coluna];
+        if (!celula) return;
+
+        const texto = celula.textContent.toLowerCase();
+        linha.style.display = texto.includes(termoNormalizado) ? "" : "none";
+    });
+}
+
+// -------------------------------------------
+// ACCORDION DOS FORMULARIOS
+// -------------------------------------------
+window.toggleSection = function toggleSection(id, header) {
+    const bloco = document.getElementById(id);
+    const icon = header.querySelector(".toggle-icon");
+
+    if (!bloco || !icon) return;
+
+    if (bloco.style.display === "block") {
+        bloco.style.display = "none";
+        icon.textContent = "+";
+    } else {
+        bloco.style.display = "block";
+        icon.textContent = "-";
+    }
+};
 
 
 // -------------------------------------------

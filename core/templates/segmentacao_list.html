@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Segmentação{% endblock %}
 
@@ -41,13 +42,9 @@
 
 </div>
 
-<script>
-document.querySelectorAll(".linha-segmentacao").forEach(linha => {
-    linha.addEventListener("dblclick", () => {
-        const id = linha.dataset.id;
-        window.location.href = `/configuracoes/segmentacao/${id}/editar/`;
-    });
-});
-</script>
+{% endblock %}
 
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/configuracoes.js' %}"></script>
 {% endblock %}

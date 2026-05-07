@@ -1,0 +1,14 @@
+/* ============================================================
+   Navbar principal
+   Aparencia do menu fixo superior.
+   ============================================================ */
+
+.main-navbar .nav-link,
+.main-navbar .navbar-nav .nav-link.show {
+    color: #fff !important;
+}
+
+.main-navbar .nav-link:hover,
+.main-navbar .nav-link:focus {
+    color: #f5b027 !important;
+}

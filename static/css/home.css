@@ -1,0 +1,55 @@
+/* ============================================================
+   Home
+   Cards das features principais e botao de saida.
+   ============================================================ */
+
+.page-content {
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 0 24px 24px;
+}
+
+.home-panel .card-body {
+    min-height: 188px;
+    padding: 18px;
+}
+
+.home-panel img {
+    max-height: 68px !important;
+}
+
+.home-panel .card {
+    background: #3a362b;
+    border: 1px solid rgba(245, 176, 39, 0.34) !important;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.22) !important;
+    color: #fff;
+}
+
+.home-panel .card:hover {
+    background: #443f30;
+    border-color: rgba(245, 176, 39, 0.65) !important;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28) !important;
+}
+
+.home-panel .card h5 {
+    color: #fff;
+}
+
+.home-panel .card p {
+    color: #d8d3c7 !important;
+}
+
+.home-logout-btn {
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(255, 255, 255, 0.92);
+    color: #1f1f1c;
+    font-weight: 600;
+}
+
+.home-logout-btn:hover,
+.home-logout-btn:focus {
+    background: #f5b027;
+    border-color: #f5b027;
+    color: #1f1f1c;
+}

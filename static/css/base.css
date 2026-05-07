@@ -1,0 +1,37 @@
+/* ============================================================
+   Base do sistema
+   Estilos compartilhados por todas as telas do Centerville.
+   ============================================================ */
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(245, 176, 39, 0.88), transparent 34%),
+        linear-gradient(135deg, #f5b027 0%, #171716 72%);
+    min-height: 100vh;
+}
+
+.page-content {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(8px);
+}
+
+/* Cards clicaveis usados na home e em telas de configuracao. */
+.hover-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-card:hover {
+    transform: scale(1.03);
+}
+
+/* Ajustes de popup do Leaflet usados por marcadores manuais. */
+.leaflet-popup-content {
+    min-width: 300px;
+}
+
+.popup-marcador-manual textarea {
+    font-size: 14px;
+}

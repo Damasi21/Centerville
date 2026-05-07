@@ -3,16 +3,26 @@
 
 {% block title %}Cliente - Cadastro{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/clientes.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
 
-    <h3 class="fw-bold mb-3">
-        {% if modo == "editar" %}
-            Editar Cliente
-        {% else %}
-            Novo Cliente
-        {% endif %}
-    </h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">
+            {% if modo == "editar" %}
+                Editar Cliente
+            {% else %}
+                Novo Cliente
+            {% endif %}
+        </h3>
+
+        <a href="{% url 'cadastro_clientes' %}" class="btn btn-outline-dark">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
 
     <form method="POST"
       id="formCliente"
@@ -364,48 +374,6 @@
 
 {% block scripts %}
 {{ block.super }}
-
-<style>
-.accordion-header {
-    font-weight: 600;
-    padding: 12px 18px;
-    background: #f8f9fa;
-    border: 1px solid #dcdcdc;
-    border-radius: 6px;
-    cursor: pointer;
-    user-select: none;
-}
-.accordion-header:hover {
-    background: #eef2f4;
-}
-.toggle-icon {
-    font-size: 20px;
-    margin-right: 10px;
-}
-.accordion-content {
-    display: none;
-    padding: 15px;
-    border-left: 2px solid #0d6efd;
-    margin-left: 12px;
-    margin-top: 10px;
-}
-</style>
-
-<script>
-function toggleSection(id, header) {
-    const bloco = document.getElementById(id);
-    const icon = header.querySelector(".toggle-icon");
-
-    if (bloco.style.display === "block") {
-        bloco.style.display = "none";
-        icon.textContent = "+";
-    } else {
-        bloco.style.display = "block";
-        icon.textContent = "-";
-    }
-}
-</script>
-
-<script src="{% static 'js/clientes.js' %}"></script>
+<script src="{% static 'js/clientes.js' %}?v=4"></script>
 
 {% endblock %}

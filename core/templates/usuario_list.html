@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Usuarios{% endblock %}
 
@@ -65,13 +66,9 @@
 
 </div>
 
-<script>
-document.querySelectorAll(".linha-usuario").forEach(linha => {
-    linha.addEventListener("dblclick", () => {
-        const id = linha.dataset.id;
-        window.location.href = `/configuracoes/usuarios/${id}/editar/`;
-    });
-});
-</script>
+{% endblock %}
 
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/configuracoes.js' %}"></script>
 {% endblock %}

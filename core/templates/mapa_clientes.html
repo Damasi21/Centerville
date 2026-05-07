@@ -3,9 +3,19 @@
 
 {% block title %}Mapa de Clientes{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mapa.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <h3 class="fw-bold mb-3">Mapa de Clientes</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Mapa de Clientes</h3>
+
+        <a href="{% url 'index' %}" class="btn btn-outline-dark">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
@@ -37,7 +47,7 @@
                 </div>
             </div>
 
-            <div id="map" style="width: 100%; height: 600px;"></div>
+            <div id="map"></div>
         </div>
     </div>
 </div>
@@ -46,12 +56,8 @@
 {% block scripts %}
 {{ block.super }}
 
-<!-- Leaflet -->
-<link rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- Nosso JS separado -->
 <script src="{% static 'js/mapa.js' %}"></script>
 
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Status{% endblock %}
 
@@ -28,7 +29,7 @@
             </thead>
             <tbody>
                 {% for o in origens %}
-                <tr data-id="{{ o.id }}">
+                <tr class="linha-origem" data-id="{{ o.id }}">
                     <td>{{ forloop.counter }}</td>
                     <td>{{ o.nome }}</td>
                 </tr>
@@ -45,13 +46,9 @@
 
 </div>
 
-<script>
-document.querySelectorAll(".linha-status").forEach(linha => {
-    linha.addEventListener("dblclick", () => {
-        const id = linha.dataset.id;
-        window.location.href = `/configuracoes/origem/${id}/editar/`;
-    });
-});
-</script>
+{% endblock %}
 
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/configuracoes.js' %}"></script>
 {% endblock %}

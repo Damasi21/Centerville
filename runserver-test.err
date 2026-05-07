@@ -1,3 +1,84 @@
 Watching for file changes with StatReloader
-[05/May/2026 17:54:06] "GET / HTTP/1.1" 200 19795
-[05/May/2026 17:54:06,680] - Broken pipe from ('127.0.0.1', 50128)
+C:\CENTERVILLE\centerville\urls.py changed, reloading.
+Watching for file changes with StatReloader
+[06/May/2026 23:57:43] "GET / HTTP/1.1" 302 0
+[06/May/2026 23:57:43] "GET /login/?next=/ HTTP/1.1" 200 3048
+[06/May/2026 23:57:43] "GET /static/css/login.css HTTP/1.1" 200 8333
+[06/May/2026 23:57:43] "GET /static/js/login.js HTTP/1.1" 200 738
+[06/May/2026 23:57:48] "GET / HTTP/1.1" 200 16362
+[06/May/2026 23:57:48] "GET /static/css/base.css HTTP/1.1" 200 942
+[06/May/2026 23:57:48] "GET /static/css/navbar.css HTTP/1.1" 200 379
+[06/May/2026 23:57:48] "GET /static/css/home.css HTTP/1.1" 200 1165
+Internal Server Error: /sair/
+Traceback (most recent call last):
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\sqlite3\base.py", line 329, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: disk I/O error
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\CENTERVILLE\core\views.py", line 55, in sair
+    logout(request)
+    ~~~~~~^^^^^^^^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\__init__.py", line 171, in logout
+    request.session.flush()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\sessions\backends\base.py", line 295, in flush
+    self.delete()
+    ~~~~~~~~~~~^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\sessions\backends\db.py", line 104, in delete
+    self.model.objects.get(session_key=session_key).delete()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1183, in delete
+    return collector.delete()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\deletion.py", line 453, in delete
+    count = sql.DeleteQuery(model).delete_batch(
+        [instance.pk], self.using
+    )
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\subqueries.py", line 42, in delete_batch
+    num_deleted += self.do_query(
+                   ~~~~~~~~~~~~~^
+        self.get_meta().db_table, self.where, using=using
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\subqueries.py", line 20, in do_query
+    cursor = self.get_compiler(using).execute_sql(CURSOR)
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1562, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\damas\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\sqlite3\base.py", line 329, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: disk I/O error
+[06/May/2026 23:57:53] "GET /sair/ HTTP/1.1" 500 146903
