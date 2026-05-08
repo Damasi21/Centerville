@@ -15,8 +15,8 @@ SECRET_KEY = 'django-insecure-pd2*r5g4kw9z+m^nn=dlnwods5l9@uvsivk=2oxsq$2svijmu3
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "tech4con.online",
-    "www.tech4con.online",
+    "centerville.md21.online",
+    "www.centerville.md21.online",
     "127.0.0.1",
     "localhost",
     "host.docker.internal",

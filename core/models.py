@@ -165,6 +165,52 @@ class CRMRegistro(models.Model):
         return f"{self.cliente.nome_interno} - {self.get_perfil_display()}"
 
 
+# ---------------------- PROPOSTAS IMPORTADAS DE PDF ----------------------
+
+class PropostaPDF(models.Model):
+    cliente = models.ForeignKey(
+        Cliente,
+        on_delete=models.CASCADE,
+        related_name="propostas_pdf"
+    )
+    numero_proposta = models.CharField(max_length=30)
+    cliente_nome_pdf = models.CharField(max_length=180, blank=True, null=True)
+    cnpj_pdf = models.CharField(max_length=20)
+    arquivo_nome = models.CharField(max_length=255, blank=True, null=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-criado_em", "-id"]
+
+    def __str__(self):
+        return f"Proposta {self.numero_proposta} - {self.cliente.nome_interno}"
+
+
+class PropostaPDFItem(models.Model):
+    LINHA_FIBRA = "Fibra"
+    LINHA_QUIMICOS = "Quimicos"
+
+    proposta = models.ForeignKey(
+        PropostaPDF,
+        on_delete=models.CASCADE,
+        related_name="itens"
+    )
+    numero_proposta = models.CharField(max_length=30)
+    produto = models.CharField(max_length=180)
+    quantidade = models.DecimalField(max_digits=12, decimal_places=3, null=True, blank=True)
+    unidade = models.CharField(max_length=20, blank=True, null=True)
+    valor_unitario = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    subtotal = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    cnpj_faturamento = models.CharField(max_length=20, blank=True, null=True)
+    linha_produto = models.CharField(max_length=30, blank=True, null=True)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"{self.numero_proposta} - {self.produto}"
+
+
 # ---------------------- ANEXOS DE CLIENTES ----------------------
 
 class AnexoCliente(models.Model):

@@ -6,6 +6,9 @@ urlpatterns = [
     path('', views.index, name='index'),
     path("login/", views.tela_login, name="tela_login"),
     path("sair/", views.sair, name="sair"),
+    path("leitor-pdf/", views.leitor_pdf, name="leitor_pdf"),
+    path("api/leitor-pdf/ler/", views.api_leitor_pdf_ler, name="api_leitor_pdf_ler"),
+    path("api/leitor-pdf/salvar/", views.api_leitor_pdf_salvar, name="api_leitor_pdf_salvar"),
 
 
 #---------------------------------CLIENTES-------------------------------------------------

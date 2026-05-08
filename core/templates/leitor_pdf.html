@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Leitor de PDF - Centerville{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/leitor_pdf.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-3 leitor-pdf-page">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="fw-bold text-secondary mb-1">Leitor de PDF</h3>
+            <div class="text-muted small">Importacao de propostas comerciais para o CRM do cliente.</div>
+        </div>
+
+        <a href="{% url 'index' %}" class="btn btn-outline-dark">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="leitor-upload mb-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-7">
+                <label for="arquivoPdf" class="form-label fw-semibold">Arquivo PDF da proposta</label>
+                <input type="file" class="form-control" id="arquivoPdf" accept="application/pdf">
+            </div>
+            <div class="col-lg-5 d-flex gap-2">
+                <button type="button" class="btn btn-primary" id="btnLerPdf">
+                    <i class="bi bi-file-earmark-text"></i> Ler PDF
+                </button>
+                <button type="button" class="btn btn-success" id="btnSalvarPdf" disabled>
+                    <i class="bi bi-database-check"></i> Salvar no BD
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertaPdf" class="alert d-none" role="alert"></div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="info-box">
+                <span>Cliente no PDF</span>
+                <strong id="pdfCliente">-</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="info-box">
+                <span>CNPJ</span>
+                <strong id="pdfCnpj">-</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="info-box">
+                <span>Proposta</span>
+                <strong id="pdfProposta">-</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="info-box">
+                <span>Status do cliente</span>
+                <strong id="pdfClienteStatus">-</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive bg-white rounded shadow-sm p-3">
+        <table class="table table-hover align-middle mb-0" id="gridPdf">
+            <thead class="table-light">
+                <tr>
+                    <th>Proposta</th>
+                    <th>Produto</th>
+                    <th class="text-end">Quantidade</th>
+                    <th>Unidade</th>
+                    <th class="text-end">Valor Unitario</th>
+                    <th class="text-end">Subtotal</th>
+                    <th>CNPJ Faturamento</th>
+                    <th>Linha de Produto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        Selecione um PDF e clique em Ler PDF.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{ dados_pdf_pendentes|json_script:"dados-pdf-pendentes" }}
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/leitor_pdf.js' %}?v=2"></script>
+{% endblock %}

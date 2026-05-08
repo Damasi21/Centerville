@@ -1,0 +1,41 @@
+.leitor-pdf-page .leitor-upload,
+.leitor-pdf-page .info-box {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+.leitor-pdf-page .leitor-upload {
+    padding: 16px;
+}
+
+.leitor-pdf-page .info-box {
+    min-height: 86px;
+    padding: 14px 16px;
+}
+
+.leitor-pdf-page .info-box span {
+    color: #6c757d;
+    display: block;
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+}
+
+.leitor-pdf-page .info-box strong {
+    color: #2d2d2d;
+    display: block;
+    font-size: 0.98rem;
+    line-height: 1.25;
+}
+
+.leitor-pdf-page #gridPdf th,
+.leitor-pdf-page #gridPdf td {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.leitor-pdf-page #gridPdf td:nth-child(2) {
+    min-width: 240px;
+    white-space: normal;
+}

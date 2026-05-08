@@ -16,12 +16,249 @@ from .models import AnexoCliente
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.db.models import Q
+from django.db import transaction
+from django.urls import reverse
+from decimal import Decimal, InvalidOperation
+from urllib.parse import urlencode
 from .models import Obra,ObraCliente
 from .forms import ObraForm
 from .models import AnexoObra
+from .models import PropostaPDF, PropostaPDFItem
 from django.utils.http import url_has_allowed_host_and_scheme
 def index(request):
     return render(request, "index.html")
+
+
+#--------------------------------------------------------------
+# LEITOR DE PDF DE PROPOSTAS
+#--------------------------------------------------------------
+
+FIBRA_CNPJ = "33577286000121"
+QUIMICOS_CNPJ = "03885146000150"
+
+
+def leitor_pdf(request):
+    dados_pendentes = request.session.get("leitor_pdf_pendente")
+    return render(request, "leitor_pdf.html", {
+        "dados_pdf_pendentes": dados_pendentes,
+    })
+
+
+def cadastro_cliente_pdf_url(cnpj):
+    params = {
+        "cnpj": somente_digitos(cnpj),
+        "next": reverse("leitor_pdf"),
+    }
+    return f"{reverse('cliente_novo')}?{urlencode(params)}"
+
+
+def somente_digitos(valor):
+    return re.sub(r"\D", "", valor or "")
+
+
+def formatar_cnpj(cnpj):
+    digitos = somente_digitos(cnpj)
+    if len(digitos) != 14:
+        return cnpj or ""
+    return f"{digitos[:2]}.{digitos[2:5]}.{digitos[5:8]}/{digitos[8:12]}-{digitos[12:]}"
+
+
+def decimal_br(valor):
+    if valor is None:
+        return None
+
+    texto = str(valor).replace("R$", "").replace("\xa0", " ").strip()
+    texto = re.sub(r"[^0-9,.-]", "", texto)
+    if not texto:
+        return None
+
+    if "," in texto:
+        texto = texto.replace(".", "").replace(",", ".")
+
+    try:
+        return Decimal(texto)
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def serializar_decimal(valor):
+    if valor is None:
+        return ""
+    return f"{valor:.2f}".replace(".", ",")
+
+
+def proxima_linha_util(linhas, inicio):
+    labels = {"quantidade", "unidade", "valor unitario", "valor unitário", "subtotal", "observacoes:", "observações:"}
+    for idx in range(inicio, len(linhas)):
+        linha = linhas[idx].strip()
+        if linha and linha.lower() not in labels:
+            return linha, idx
+    return "", inicio
+
+
+def extrair_dados_proposta_pdf(arquivo):
+    from pypdf import PdfReader
+
+    reader = PdfReader(arquivo)
+    paginas = [(page.extract_text() or "") for page in reader.pages]
+    texto_primeira = paginas[0] if paginas else ""
+    texto_total = "\n".join(paginas)
+
+    cliente_nome = ""
+    cliente_match = re.search(r"Cliente:\s*(.+?)\s*CNPJ/CPF:", texto_primeira, re.I | re.S)
+    if cliente_match:
+        cliente_nome = re.sub(r"\s+", " ", cliente_match.group(1)).strip()
+
+    cnpj_pdf = ""
+    cnpj_match = re.search(r"CNPJ/CPF:\s*([0-9./-]{14,18})", texto_primeira, re.I)
+    if cnpj_match:
+        cnpj_pdf = formatar_cnpj(cnpj_match.group(1))
+
+    numero_proposta = ""
+    proposta_match = re.search(r"Proposta\s+Comercial\s+n[ºo]\s*([0-9]+)", texto_total, re.I)
+    if proposta_match:
+        numero_proposta = proposta_match.group(1)
+
+    itens = []
+    cnpj_faturamento_re = re.compile(r"([0-9]{2}\.[0-9]{3}\.[0-9]{3}/[0-9]{4}-[0-9]{2})")
+
+    for pagina in paginas[1:]:
+        linhas = [linha.strip() for linha in pagina.splitlines() if linha.strip()]
+
+        indices_quantidade = [
+            idx for idx, linha in enumerate(linhas)
+            if linha.lower() == "quantidade" and idx > 0
+        ]
+
+        for posicao, idx_qtd in enumerate(indices_quantidade):
+            proximo_bloco = indices_quantidade[posicao + 1] if posicao + 1 < len(indices_quantidade) else len(linhas)
+            produto = linhas[idx_qtd - 1].strip()
+            quantidade_txt, idx_quantidade = proxima_linha_util(linhas, idx_qtd + 1)
+
+            unidade_txt = ""
+            valor_unitario_txt = ""
+            subtotal_txt = ""
+
+            for idx in range(idx_quantidade + 1, proximo_bloco):
+                label = linhas[idx].lower()
+                if label == "unidade":
+                    unidade_txt, _ = proxima_linha_util(linhas, idx + 1)
+                elif label in {"valor unitário", "valor unitario"}:
+                    valor_unitario_txt, _ = proxima_linha_util(linhas, idx + 1)
+                elif label == "subtotal":
+                    subtotal_txt, _ = proxima_linha_util(linhas, idx + 1)
+
+            bloco_texto = "\n".join(linhas[idx_qtd:proximo_bloco])
+            cnpj_faturamento = ""
+            cnpj_fat_match = cnpj_faturamento_re.search(bloco_texto)
+            if cnpj_fat_match:
+                cnpj_faturamento = formatar_cnpj(cnpj_fat_match.group(1))
+
+            cnpj_digits = somente_digitos(cnpj_faturamento)
+            if cnpj_digits == FIBRA_CNPJ:
+                linha_produto = "Fibra"
+            elif cnpj_digits == QUIMICOS_CNPJ:
+                linha_produto = "Quimicos"
+            else:
+                linha_produto = ""
+
+            itens.append({
+                "numero_proposta": numero_proposta,
+                "produto": produto,
+                "quantidade": serializar_decimal(decimal_br(quantidade_txt)),
+                "unidade": unidade_txt,
+                "valor_unitario": serializar_decimal(decimal_br(valor_unitario_txt)),
+                "subtotal": serializar_decimal(decimal_br(subtotal_txt)),
+                "cnpj_faturamento": cnpj_faturamento,
+                "linha_produto": linha_produto,
+            })
+
+    return {
+        "cliente": cliente_nome,
+        "cnpj": cnpj_pdf,
+        "numero_proposta": numero_proposta,
+        "itens": itens,
+    }
+
+
+@require_http_methods(["POST"])
+def api_leitor_pdf_ler(request):
+    arquivo = request.FILES.get("arquivo")
+    if not arquivo:
+        return JsonResponse({"ok": False, "error": "Envie um arquivo PDF."}, status=400)
+
+    try:
+        dados = extrair_dados_proposta_pdf(arquivo)
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": f"Nao foi possivel ler o PDF: {e}"}, status=400)
+
+    dados["arquivo_nome"] = arquivo.name
+
+    cliente = Cliente.objects.filter(cnpj_cpf=somente_digitos(dados.get("cnpj"))).first()
+    cadastro_url = cadastro_cliente_pdf_url(dados.get("cnpj"))
+
+    dados.update({
+        "ok": True,
+        "cliente_existe": bool(cliente),
+        "cliente_id": cliente.id if cliente else None,
+        "cliente_nome_sistema": cliente.nome_interno if cliente else "",
+        "cadastro_url": cadastro_url,
+    })
+    request.session["leitor_pdf_pendente"] = dados
+    return JsonResponse(dados)
+
+
+@require_http_methods(["POST"])
+def api_leitor_pdf_salvar(request):
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except Exception:
+        return JsonResponse({"ok": False, "error": "JSON invalido."}, status=400)
+
+    cnpj = somente_digitos(payload.get("cnpj"))
+    cliente = Cliente.objects.filter(cnpj_cpf=cnpj).first()
+    if not cliente:
+        return JsonResponse({
+            "ok": False,
+            "error": "Cliente nao cadastrado.",
+            "cadastro_url": cadastro_cliente_pdf_url(cnpj),
+        }, status=404)
+
+    itens = payload.get("itens") or []
+    if not itens:
+        return JsonResponse({"ok": False, "error": "Nenhum item encontrado para salvar."}, status=400)
+
+    with transaction.atomic():
+        proposta = PropostaPDF.objects.create(
+            cliente=cliente,
+            numero_proposta=payload.get("numero_proposta") or "",
+            cliente_nome_pdf=payload.get("cliente") or "",
+            cnpj_pdf=formatar_cnpj(cnpj),
+            arquivo_nome=payload.get("arquivo_nome") or "",
+        )
+
+        for item in itens:
+            PropostaPDFItem.objects.create(
+                proposta=proposta,
+                numero_proposta=item.get("numero_proposta") or proposta.numero_proposta,
+                produto=item.get("produto") or "",
+                quantidade=decimal_br(item.get("quantidade")),
+                unidade=item.get("unidade") or "",
+                valor_unitario=decimal_br(item.get("valor_unitario")),
+                subtotal=decimal_br(item.get("subtotal")),
+                cnpj_faturamento=formatar_cnpj(item.get("cnpj_faturamento")),
+                linha_produto=item.get("linha_produto") or "",
+            )
+
+    request.session.pop("leitor_pdf_pendente", None)
+
+    return JsonResponse({
+        "ok": True,
+        "proposta_id": proposta.id,
+        "cliente_id": cliente.id,
+        "cliente_nome": cliente.nome_interno,
+        "message": "Proposta salva com sucesso.",
+    })
 
 
 def tela_login(request):
@@ -70,6 +307,7 @@ def clientes_list(request):
 # NOVO CLIENTE
 # ----------------------------------------------------------
 def cliente_novo(request):
+    next_url = request.POST.get("next") or request.GET.get("next")
 
     if request.method == "POST":
         form = ClienteForm(request.POST)
@@ -123,20 +361,25 @@ def cliente_novo(request):
                             
                         )
                 except Exception as e:
-                    print(f"⚠ Erro ao salvar contatos JSON: {e}")
+                    print(f"Aviso: erro ao salvar contatos JSON: {e}")
 
             messages.success(request, "Cliente cadastrado com sucesso!")
-            # Continua indo pra lista de clientes
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+
             return redirect("cadastro_clientes")
 
         else:
-            # Se não é válido, mostra erros normalmente
-            print("❌ Form ClienteForm inválido:", form.errors)
+            print("Form ClienteForm invalido:", form.errors)
 
     else:
-        form = ClienteForm()
+        initial = {}
+        cnpj_inicial = somente_digitos(request.GET.get("cnpj"))
+        if cnpj_inicial:
+            initial["cnpj_cpf"] = cnpj_inicial
+        form = ClienteForm(initial=initial)
 
-    return render(request, "clientes.form.html", {"form": form, "modo": "novo"})
+    return render(request, "clientes.form.html", {"form": form, "modo": "novo", "next_url": next_url})
 
 
 # ----------------------------------------------------------
@@ -163,7 +406,7 @@ def cliente_editar(request, id):
                     cliente.latitude = float(lat_input.replace(",", ".")) if lat_input else None
                     cliente.longitude = float(lon_input.replace(",", ".")) if lon_input else None
                 except:
-                    print("⚠ Erro convertendo lat/lon manual.")
+                    print("Aviso: erro convertendo lat/lon manual.")
                     cliente.latitude = None
                     cliente.longitude = None
 
@@ -178,7 +421,7 @@ def cliente_editar(request, id):
                                f"{form.cleaned_data.get('estado') or ''}, " \
                                f"{form.cleaned_data.get('cep') or ''}"
 
-                print(f"🔎 Re-geocodificando cliente (editar): {endereco_str}")
+                print(f"Re-geocodificando cliente (editar): {endereco_str}")
                 lat, lon = geocodificar_endereco(endereco_str)
 
                 cliente.latitude = lat
@@ -210,7 +453,7 @@ def cliente_editar(request, id):
                             
                         )
                 except Exception as e:
-                    print(f"⚠ Erro salvando contatos: {e}")
+                    print(f"Aviso: erro salvando contatos: {e}")
 
             messages.success(request, "Cliente atualizado com sucesso!")
             return redirect("cadastro_clientes")
@@ -288,7 +531,7 @@ def geocodificar_endereco(endereco):
     """
     try:
         if not endereco or endereco.strip() == ",":
-            print("⚠ geocodificar_endereco: endereço vazio")
+            print("Aviso: geocodificar_endereco: endereco vazio")
             return None, None
 
         url = "https://nominatim.openstreetmap.org/search"
@@ -300,27 +543,27 @@ def geocodificar_endereco(endereco):
         }
         headers = {"User-Agent": "CENTERVILLE-App"}
 
-        print(f"🔎 Geocodificando endereço: {endereco}")
+        print(f"Geocodificando endereco: {endereco}")
         r = requests.get(url, params=params, headers=headers, timeout=10)
 
         if r.status_code != 200:
-            print(f"⚠ Erro HTTP Nominatim: {r.status_code} - {r.text[:200]}")
+            print(f"Aviso: erro HTTP Nominatim: {r.status_code} - {r.text[:200]}")
             return None, None
 
         data = r.json()
         if not data:
-            print("⚠ Nominatim não retornou resultados para esse endereço.")
+            print("Aviso: Nominatim nao retornou resultados para esse endereco.")
             return None, None
 
         lat = float(data[0]["lat"])
         lon = float(data[0]["lon"])
         display = data[0].get("display_name", "")
 
-        print(f"✅ Coordenadas obtidas: lat={lat}, lon={lon}")
+        print(f"Coordenadas obtidas: lat={lat}, lon={lon}")
         return lat, lon
 
     except Exception as e:
-        print(f"❌ Erro em geocodificar_endereco: {e}")
+        print(f"Erro em geocodificar_endereco: {e}")
         return None, None
 #--------------------------------------------------------------
 
@@ -994,7 +1237,7 @@ def obra_nova(request):
             return redirect("obra_editar", id=obra.id)
 
         else:
-            print("❌ ObraForm inválido:", form.errors)
+            print("ObraForm invalido:", form.errors)
 
     else:
         form = ObraForm()
