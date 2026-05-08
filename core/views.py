@@ -5,6 +5,7 @@ from .forms import ClienteForm, SegmentacaoForm, OrigemClienteForm, UsuarioForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+from django.conf import settings
 import requests
 import json
 import re
@@ -186,6 +187,13 @@ def api_leitor_pdf_ler(request):
     arquivo = request.FILES.get("arquivo")
     if not arquivo:
         return JsonResponse({"ok": False, "error": "Envie um arquivo PDF."}, status=400)
+
+    if arquivo.size > settings.PDF_UPLOAD_MAX_SIZE:
+        limite_mb = settings.PDF_UPLOAD_MAX_SIZE // (1024 * 1024)
+        return JsonResponse({
+            "ok": False,
+            "error": f"O PDF ultrapassou o limite de {limite_mb} MB.",
+        }, status=413)
 
     try:
         dados = extrair_dados_proposta_pdf(arquivo)

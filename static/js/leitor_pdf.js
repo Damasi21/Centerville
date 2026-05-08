@@ -1,4 +1,5 @@
 let dadosPdfAtual = null;
+const PDF_UPLOAD_MAX_SIZE = 20 * 1024 * 1024;
 
 function getCookie(name) {
     let cookieValue = null;
@@ -50,7 +51,7 @@ async function lerRespostaJson(resposta) {
     if (resposta.status === 403) {
         detalhe = "A sessao expirou ou o token de seguranca nao foi aceito. Atualize a pagina, faca login novamente e tente de novo.";
     } else if (resposta.status === 413) {
-        detalhe = "O PDF ultrapassou o limite de upload configurado no servidor. Aumente o limite do Nginx/Proxy para pelo menos 20 MB.";
+        detalhe = "O PDF ultrapassou o limite de upload configurado no servidor. Aumente o client_max_body_size do Nginx/Proxy para pelo menos 25M e reinicie o servico.";
     } else if (resposta.status >= 500) {
         detalhe = "Erro interno no servidor. Confira o log do Django/Gunicorn para ver a causa real.";
     }
@@ -196,6 +197,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const arquivo = input.files[0];
+            if (arquivo.size > PDF_UPLOAD_MAX_SIZE) {
+                mostrarAlerta("warning", "O PDF ultrapassou o limite de 20 MB.");
+                renderGrid([]);
+                return;
+            }
+
             const formData = new FormData();
             formData.append("arquivo", arquivo);
 
