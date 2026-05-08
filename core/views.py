@@ -196,6 +196,9 @@ def api_leitor_pdf_ler(request):
 
     cliente = Cliente.objects.filter(cnpj_cpf=somente_digitos(dados.get("cnpj"))).first()
     cadastro_url = cadastro_cliente_pdf_url(dados.get("cnpj"))
+    proposta_existente = PropostaPDF.objects.filter(
+        numero_proposta=dados.get("numero_proposta") or ""
+    ).first() if dados.get("numero_proposta") else None
 
     dados.update({
         "ok": True,
@@ -203,6 +206,8 @@ def api_leitor_pdf_ler(request):
         "cliente_id": cliente.id if cliente else None,
         "cliente_nome_sistema": cliente.nome_interno if cliente else "",
         "cadastro_url": cadastro_url,
+        "proposta_existe": bool(proposta_existente),
+        "proposta_existente_cliente": proposta_existente.cliente.nome_interno if proposta_existente else "",
     })
     request.session["leitor_pdf_pendente"] = dados
     return JsonResponse(dados)
@@ -228,10 +233,17 @@ def api_leitor_pdf_salvar(request):
     if not itens:
         return JsonResponse({"ok": False, "error": "Nenhum item encontrado para salvar."}, status=400)
 
+    numero_proposta = payload.get("numero_proposta") or ""
+    if numero_proposta and PropostaPDF.objects.filter(numero_proposta=numero_proposta).exists():
+        return JsonResponse({
+            "ok": False,
+            "error": f"Ja existe a proposta {numero_proposta} cadastrada. A importacao foi cancelada.",
+        }, status=409)
+
     with transaction.atomic():
         proposta = PropostaPDF.objects.create(
             cliente=cliente,
-            numero_proposta=payload.get("numero_proposta") or "",
+            numero_proposta=numero_proposta,
             cliente_nome_pdf=payload.get("cliente") or "",
             cnpj_pdf=formatar_cnpj(cnpj),
             arquivo_nome=payload.get("arquivo_nome") or "",

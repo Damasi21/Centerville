@@ -21,6 +21,7 @@
     </div>
 
     <div class="leitor-upload mb-3">
+        {% csrf_token %}
         <div class="row g-3 align-items-end">
             <div class="col-lg-7">
                 <label for="arquivoPdf" class="form-label fw-semibold">Arquivo PDF da proposta</label>
@@ -96,5 +97,5 @@
 
 {% block scripts %}
 {{ block.super }}
-<script src="{% static 'js/leitor_pdf.js' %}?v=2"></script>
+<script src="{% static 'js/leitor_pdf.js' %}?v=4"></script>
 {% endblock %}

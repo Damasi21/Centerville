@@ -61,3 +61,98 @@ C:\CENTERVILLE\core\views.py changed, reloading.
 Watching for file changes with StatReloader
 C:\CENTERVILLE\core\views.py changed, reloading.
 Watching for file changes with StatReloader
+[08/May/2026 17:07:33] "GET / HTTP/1.1" 302 0
+[08/May/2026 17:07:33] "GET /login/?next=/ HTTP/1.1" 200 3048
+[08/May/2026 17:07:33] "GET /media/md21.png HTTP/1.1" 200 102791
+[08/May/2026 17:07:33] "GET /favicon.ico HTTP/1.1" 302 0
+[08/May/2026 17:07:33] "GET /login/?next=/favicon.ico HTTP/1.1" 200 3059
+[08/May/2026 17:07:37] "POST /login/ HTTP/1.1" 302 0
+[08/May/2026 17:07:38] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:07:38] "GET /media/cliente.png HTTP/1.1" 200 29746
+[08/May/2026 17:07:38] "GET /media/mapa.png HTTP/1.1" 200 37975
+[08/May/2026 17:07:38] "GET /media/proposta.png HTTP/1.1" 200 23117
+[08/May/2026 17:07:38] "GET /media/relatorios.png HTTP/1.1" 200 19490
+Not Found: /favicon.ico
+[08/May/2026 17:07:38] "GET /favicon.ico HTTP/1.1" 404 11545
+[08/May/2026 17:07:39] "GET /leitor-pdf/ HTTP/1.1" 200 17390
+[08/May/2026 17:07:39] "GET /static/css/leitor_pdf.css HTTP/1.1" 304 0
+[08/May/2026 17:07:39] "GET /static/js/leitor_pdf.js?v=3 HTTP/1.1" 200 9388
+[08/May/2026 17:07:46] "POST /api/leitor-pdf/ler/ HTTP/1.1" 200 777
+[08/May/2026 17:07:50] "POST /api/leitor-pdf/salvar/ HTTP/1.1" 200 135
+[08/May/2026 17:07:53] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:07:55] "GET /clientes/ HTTP/1.1" 200 46181
+[08/May/2026 17:08:00,011] - Broken pipe from ('127.0.0.1', 58304)
+[08/May/2026 17:08:00] "GET /clientes/37/ HTTP/1.1" 200 33874
+[08/May/2026 17:08:12] "GET /clientes/ HTTP/1.1" 200 46181
+C:\CENTERVILLE\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+[08/May/2026 17:10:49] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:10:50] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:10:50] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:10:50] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:10:50] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:10:51,881] - Broken pipe from ('127.0.0.1', 52131)
+[08/May/2026 17:10:51,914] - Broken pipe from ('127.0.0.1', 61237)
+[08/May/2026 17:10:51,945] - Broken pipe from ('127.0.0.1', 51014)
+[08/May/2026 17:10:51,998] - Broken pipe from ('127.0.0.1', 63356)
+[08/May/2026 17:10:52,129] - Broken pipe from ('127.0.0.1', 55581)
+[08/May/2026 17:10:52,592] - Broken pipe from ('127.0.0.1', 50346)
+[08/May/2026 17:10:52,619] - Broken pipe from ('127.0.0.1', 61614)
+[08/May/2026 17:10:52,659] - Broken pipe from ('127.0.0.1', 49668)
+[08/May/2026 17:10:52,709] - Broken pipe from ('127.0.0.1', 62337)
+[08/May/2026 17:10:52,753] - Broken pipe from ('127.0.0.1', 63834)
+[08/May/2026 17:10:52,826] - Broken pipe from ('127.0.0.1', 63713)
+[08/May/2026 17:10:52,851] - Broken pipe from ('127.0.0.1', 65485)
+[08/May/2026 17:10:52,891] - Broken pipe from ('127.0.0.1', 62070)
+[08/May/2026 17:10:52,903] - Broken pipe from ('127.0.0.1', 59683)
+[08/May/2026 17:10:52,910] - Broken pipe from ('127.0.0.1', 63798)
+[08/May/2026 17:10:52] "GET /static/css/navbar.css HTTP/1.1" 200 379
+[08/May/2026 17:10:52] "GET /static/css/home.css HTTP/1.1" 200 1165
+[08/May/2026 17:10:52] "GET /media/cliente.png HTTP/1.1" 200 29746
+[08/May/2026 17:10:52] "GET /static/css/base.css HTTP/1.1" 200 942
+[08/May/2026 17:10:52] "GET /media/md21.png HTTP/1.1" 200 102791
+[08/May/2026 17:10:52] "GET /static/js/main.js HTTP/1.1" 200 1654
+[08/May/2026 17:10:52] "GET /media/proposta.png HTTP/1.1" 200 23117
+[08/May/2026 17:10:52] "GET /media/relatorios.png HTTP/1.1" 200 19490
+[08/May/2026 17:10:52] "GET /media/mapa.png HTTP/1.1" 200 37975
+Not Found: /favicon.ico
+[08/May/2026 17:10:53] "GET /favicon.ico HTTP/1.1" 404 11545
+[08/May/2026 17:10:53] "GET /clientes/ HTTP/1.1" 200 46181
+[08/May/2026 17:10:54] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:10:56] "GET /leitor-pdf/ HTTP/1.1" 200 17390
+[08/May/2026 17:10:56] "GET /static/js/leitor_pdf.js?v=4 HTTP/1.1" 200 10315
+[08/May/2026 17:10:58] "GET /leitor-pdf/ HTTP/1.1" 200 17390
+[08/May/2026 17:10:58] "GET /static/js/main.js HTTP/1.1" 200 1654
+[08/May/2026 17:10:58] "GET /static/css/navbar.css HTTP/1.1" 200 379
+[08/May/2026 17:10:58] "GET /static/css/base.css HTTP/1.1" 200 942
+[08/May/2026 17:10:58] "GET /static/css/leitor_pdf.css HTTP/1.1" 200 792
+[08/May/2026 17:10:58] "GET /media/md21.png HTTP/1.1" 200 102791
+[08/May/2026 17:10:58] "GET /static/js/leitor_pdf.js?v=4 HTTP/1.1" 200 10315
+[08/May/2026 17:10:58] "GET /leitor-pdf/ HTTP/1.1" 200 17390
+[08/May/2026 17:10:58] "GET /static/css/base.css HTTP/1.1" 200 942
+[08/May/2026 17:10:58] "GET /static/css/navbar.css HTTP/1.1" 200 379
+[08/May/2026 17:10:58] "GET /static/css/leitor_pdf.css HTTP/1.1" 200 792
+[08/May/2026 17:10:58] "GET /static/js/main.js HTTP/1.1" 200 1654
+[08/May/2026 17:10:58] "GET /static/js/leitor_pdf.js?v=4 HTTP/1.1" 200 10315
+[08/May/2026 17:10:58] "GET /media/md21.png HTTP/1.1" 200 102791
+[08/May/2026 17:10:58] "GET /leitor-pdf/ HTTP/1.1" 200 17390
+[08/May/2026 17:10:58] "GET /static/css/base.css HTTP/1.1" 200 942
+[08/May/2026 17:10:58] "GET /static/css/leitor_pdf.css HTTP/1.1" 200 792
+[08/May/2026 17:10:58] "GET /static/css/navbar.css HTTP/1.1" 200 379
+[08/May/2026 17:10:58] "GET /static/js/main.js HTTP/1.1" 200 1654
+[08/May/2026 17:10:58] "GET /static/js/leitor_pdf.js?v=4 HTTP/1.1" 200 10315
+[08/May/2026 17:10:58] "GET /media/md21.png HTTP/1.1" 200 102791
+[08/May/2026 17:10:58] "GET /leitor-pdf/ HTTP/1.1" 200 17390
+[08/May/2026 17:10:58] "GET /static/css/navbar.css HTTP/1.1" 200 379
+[08/May/2026 17:10:58] "GET /static/css/leitor_pdf.css HTTP/1.1" 200 792
+[08/May/2026 17:10:58] "GET /static/css/base.css HTTP/1.1" 200 942
+[08/May/2026 17:10:58] "GET /static/js/main.js HTTP/1.1" 200 1654
+[08/May/2026 17:10:58] "GET /media/md21.png HTTP/1.1" 200 102791
+[08/May/2026 17:10:58] "GET /static/js/leitor_pdf.js?v=4 HTTP/1.1" 200 10315
+Not Found: /favicon.ico
+[08/May/2026 17:10:58] "GET /favicon.ico HTTP/1.1" 404 11545
+[08/May/2026 17:11:04] "POST /api/leitor-pdf/ler/ HTTP/1.1" 200 861
+[08/May/2026 17:11:15] "GET / HTTP/1.1" 200 17128
+[08/May/2026 17:11:18] "GET /leitor-pdf/ HTTP/1.1" 200 18252
+[08/May/2026 17:11:18] "GET /static/js/leitor_pdf.js?v=4 HTTP/1.1" 304 0
+[08/May/2026 17:11:21] "GET / HTTP/1.1" 200 17128

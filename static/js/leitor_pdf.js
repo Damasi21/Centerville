@@ -31,6 +31,33 @@ function limparAlerta() {
     alerta.innerHTML = "";
 }
 
+async function lerRespostaJson(resposta) {
+    const contentType = resposta.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+        return await resposta.json();
+    }
+
+    const textoResposta = await resposta.text();
+    const textoLimpo = textoResposta
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    let detalhe = textoLimpo ? textoLimpo.slice(0, 220) : `HTTP ${resposta.status}`;
+
+    if (resposta.status === 403) {
+        detalhe = "A sessao expirou ou o token de seguranca nao foi aceito. Atualize a pagina, faca login novamente e tente de novo.";
+    } else if (resposta.status === 413) {
+        detalhe = "O PDF ultrapassou o limite de upload configurado no servidor. Aumente o limite do Nginx/Proxy para pelo menos 20 MB.";
+    } else if (resposta.status >= 500) {
+        detalhe = "Erro interno no servidor. Confira o log do Django/Gunicorn para ver a causa real.";
+    }
+
+    throw new Error(detalhe);
+}
+
 function texto(valor) {
     return valor || "-";
 }
@@ -85,6 +112,17 @@ function atualizarResumo(dados) {
     `;
 }
 
+function propostaJaExiste(dados) {
+    return dados && dados.proposta_existe;
+}
+
+function mensagemPropostaExistente(dados) {
+    const numero = dados?.numero_proposta || "";
+    const cliente = dados?.proposta_existente_cliente || "";
+    const sufixo = cliente ? ` para o cliente ${cliente}` : "";
+    return `Ja existe a proposta ${numero}${sufixo}. A importacao foi cancelada.`;
+}
+
 async function revalidarClientePendente(dados) {
     if (!dados || !dados.cnpj || dados.cliente_existe) return dados;
 
@@ -124,9 +162,11 @@ async function carregarDadosPendentes() {
         renderGrid(dados.itens);
 
         const btnSalvar = document.getElementById("btnSalvarPdf");
-        if (btnSalvar) btnSalvar.disabled = !dados.cliente_existe;
+        if (btnSalvar) btnSalvar.disabled = !dados.cliente_existe || propostaJaExiste(dados);
 
-        if (dados.cliente_existe) {
+        if (propostaJaExiste(dados)) {
+            mostrarAlerta("warning", mensagemPropostaExistente(dados));
+        } else if (dados.cliente_existe) {
             mostrarAlerta("info", "Dados do PDF restaurados. O cliente ja foi localizado; confira o grid e salve no banco.");
         } else {
             const link = `<a href="${dados.cadastro_url}" class="alert-link">Cadastrar o cliente?</a>`;
@@ -171,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: formData
                 });
 
-                const dados = await resposta.json();
+                const dados = await lerRespostaJson(resposta);
                 if (!resposta.ok || !dados.ok) {
                     mostrarAlerta("danger", dados.error || "Erro ao ler PDF.");
                     renderGrid([]);
@@ -182,7 +222,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 atualizarResumo(dados);
                 renderGrid(dados.itens);
 
-                if (dados.cliente_existe) {
+                if (propostaJaExiste(dados)) {
+                    btnSalvar.disabled = true;
+                    mostrarAlerta("warning", mensagemPropostaExistente(dados));
+                } else if (dados.cliente_existe) {
                     btnSalvar.disabled = false;
                     mostrarAlerta("success", "PDF lido com sucesso. Confira o grid e salve no banco.");
                 } else {
@@ -202,6 +245,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnSalvar) {
         btnSalvar.addEventListener("click", async () => {
             if (!dadosPdfAtual) return;
+            if (propostaJaExiste(dadosPdfAtual)) {
+                mostrarAlerta("warning", mensagemPropostaExistente(dadosPdfAtual));
+                btnSalvar.disabled = true;
+                return;
+            }
 
             btnSalvar.disabled = true;
             btnSalvar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Salvando...';
@@ -216,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify(dadosPdfAtual)
                 });
 
-                const dados = await resposta.json();
+                const dados = await lerRespostaJson(resposta);
                 if (!resposta.ok || !dados.ok) {
                     const cadastro = dados.cadastro_url
                         ? ` <a href="${dados.cadastro_url}" class="alert-link">Cadastrar cliente?</a>`
