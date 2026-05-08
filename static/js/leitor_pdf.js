@@ -35,7 +35,11 @@ function limparAlerta() {
 async function lerRespostaJson(resposta) {
     const contentType = resposta.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
-        return await resposta.json();
+        const dados = await resposta.json();
+        if (!resposta.ok) {
+            throw new Error(dados.error || `HTTP ${resposta.status}`);
+        }
+        return dados;
     }
 
     const textoResposta = await resposta.text();
