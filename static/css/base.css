@@ -18,6 +18,26 @@ body {
     backdrop-filter: blur(8px);
 }
 
+.modal {
+    z-index: 1060;
+}
+
+.modal-backdrop {
+    z-index: 1050;
+}
+
+.crm-select-bloqueado {
+    pointer-events: none;
+    background-color: #f1f3f5;
+    color: #6c757d;
+}
+
+.crm-tipo-categoria-select {
+    min-width: 120px;
+    max-width: 145px;
+    font-size: 0.82rem;
+}
+
 /* Cards clicaveis usados na home e em telas de configuracao. */
 .hover-card {
     transition: transform 0.2s ease-in-out;

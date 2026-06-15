@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Tipos de Atividade{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-secondary">Tipos de Atividade</h3>
+
+        <div>
+            <a href="{% url 'configuracoes' %}" class="btn btn-secondary me-2">
+                <i class="bi bi-arrow-left-circle"></i> Voltar
+            </a>
+            <a href="{% url 'tipocategoriaatividade_novo' %}" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Incluir
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive shadow-sm bg-white p-3 rounded">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tipo in tipos %}
+                <tr class="linha-tipo-categoria-atividade" data-id="{{ tipo.id }}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ tipo.nome }}</td>
+                    <td>
+                        {% if tipo.ativo %}
+                            <span class="badge bg-success">Ativo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inativo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted">
+                        Nenhum tipo de atividade cadastrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="{% static 'js/configuracoes.js' %}"></script>
+{% endblock %}

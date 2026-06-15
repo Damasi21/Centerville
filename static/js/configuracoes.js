@@ -23,6 +23,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ------------------------------------------------------------
+    // Atividades
+    // ------------------------------------------------------------
+    document.querySelectorAll(".linha-atividade").forEach(linha => {
+        linha.addEventListener("dblclick", () => {
+            window.location.href = `/configuracoes/atividades/${linha.dataset.id}/editar/`;
+        });
+    });
+
+    // ------------------------------------------------------------
+    // Tipos de atividade
+    // ------------------------------------------------------------
+    document.querySelectorAll(".linha-tipo-categoria-atividade").forEach(linha => {
+        linha.addEventListener("dblclick", () => {
+            window.location.href = `/configuracoes/tipos-atividade/${linha.dataset.id}/editar/`;
+        });
+    });
+
+    // ------------------------------------------------------------
     // Usuarios
     // ------------------------------------------------------------
     document.querySelectorAll(".linha-usuario").forEach(linha => {

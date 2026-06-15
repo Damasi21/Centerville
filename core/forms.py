@@ -1,6 +1,6 @@
 from django import forms
 from .models import Cliente
-from .models import Segmentacao, OrigemCliente
+from .models import Segmentacao, OrigemCliente, TipoAtividade, TipoCategoriaAtividade, CRMAtividade
 from django.forms import inlineformset_factory
 from .models import Contato
 from django.core.exceptions import ValidationError
@@ -150,6 +150,75 @@ class OrigemClienteForm(forms.ModelForm):
         widgets = {
             "nome": forms.TextInput(attrs={"class": "form-control"}),
         }
+
+
+class TipoAtividadeForm(forms.ModelForm):
+    class Meta:
+        model = TipoAtividade
+        fields = ["nome", "texto_pronto", "ativo"]
+        labels = {
+            "nome": "Nome",
+            "texto_pronto": "Texto pronto",
+            "ativo": "Ativo",
+        }
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": "form-control"}),
+            "texto_pronto": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 5,
+                "placeholder": "Digite o texto que deve aparecer quando esta atividade for selecionada no CRM.",
+            }),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class TipoCategoriaAtividadeForm(forms.ModelForm):
+    class Meta:
+        model = TipoCategoriaAtividade
+        fields = ["nome", "ativo"]
+        labels = {
+            "nome": "Nome",
+            "ativo": "Ativo",
+        }
+        widgets = {
+            "nome": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Ex.: Ligacao, WhatsApp, E-mail, RD Station",
+            }),
+            "ativo": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+
+class CRMAtividadeForm(forms.ModelForm):
+    class Meta:
+        model = CRMAtividade
+        fields = ["cliente_nome", "telefone", "tipo", "texto"]
+        labels = {
+            "cliente_nome": "Cliente",
+            "telefone": "Telefone",
+            "tipo": "Atividade",
+            "texto": "Texto",
+        }
+        widgets = {
+            "cliente_nome": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Nome do cliente",
+            }),
+            "telefone": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "(00) 00000-0000",
+            }),
+            "tipo": forms.Select(attrs={"class": "form-select"}),
+            "texto": forms.Textarea(attrs={
+                "class": "form-control",
+                "rows": 3,
+                "placeholder": "Texto da atividade",
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tipo"].queryset = TipoAtividade.objects.filter(ativo=True).order_by("nome")
 
 
 class UsuarioForm(forms.ModelForm):

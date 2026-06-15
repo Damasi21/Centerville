@@ -33,14 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // -------------------------------------------
-    // FILTROS DA LISTAGEM DE OBRAS
-    // -------------------------------------------
-    document.querySelectorAll(".filtro-obra").forEach(input => {
-        input.addEventListener("keyup", function () {
-            filtrarTabela("#tabela-obras", this.dataset.col, this.value);
-        });
-    });
 
     // -------------------------------------------
     // FORMATA CNPJ/CPF NA TABELA DE CLIENTES
@@ -54,39 +46,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     // -------------------------------------------
-    // BOTÃO INCLUIR (CLIENTES x OBRAS por aba ativa)
-    // -------------------------------------------
-    // -------------------------------------------
-    // BOTÃO INCLUIR (CLIENTE x OBRA)
-    // - Se existir aba ativa, decide pela aba
-    // - Se não existir abas, pergunta (Cliente ou Obra)
+    // BOTAO INCLUIR CLIENTE
     // -------------------------------------------
     const btnIncluir = document.querySelector("#btnIncluir");
     if (btnIncluir) {
         btnIncluir.addEventListener("click", () => {
-
-            const tabClientes = document.getElementById("tab-clientes");
-            const tabObras = document.getElementById("tab-obras");
-
-            // Caso 1: existem abas (cadastro com 2 tabs)
-            if (tabClientes && tabObras) {
-                if (tabClientes.classList.contains("active")) {
-                    window.location.href = btnIncluir.dataset.clienteUrl || "/clientes/novo/";
-                    return;
-                }
-                if (tabObras.classList.contains("active")) {
-                    window.location.href = btnIncluir.dataset.obraUrl || "/obras/novo/";
-                    return;
-                }
-            }
-
-        // Caso 2: não existem abas ainda -> mostra 2 opções
-        const irParaObra = confirm("Deseja incluir uma OBRA?\n\nOK = Obra\nCancelar = Cliente");
-        window.location.href = irParaObra
-            ? (btnIncluir.dataset.obraUrl || "/obras/novo/")
-            : (btnIncluir.dataset.clienteUrl || "/clientes/novo/");
-    });
-}
+            window.location.href = btnIncluir.dataset.clienteUrl || "/clientes/novo/";
+        });
+    }
 
 
     // -------------------------------------------
@@ -99,15 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // -------------------------------------------
-    // CLICK PARA EDITAR (OBRAS) - usa data-url
-    // -------------------------------------------
-    document.querySelectorAll(".linha-obra").forEach((linha) => {
-        linha.addEventListener("dblclick", function () {
-            const url = this.dataset.url;
-            if (url) window.location.href = url;
-        });
-    });
 
     // -------------------------------------------
     // SELECT2

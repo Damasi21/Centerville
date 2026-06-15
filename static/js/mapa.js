@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ========================================================
     map = L.map('map').setView([-14.2350, -51.9253], 4);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
         subdomains: 'abcd',
         maxZoom: 19
@@ -22,54 +22,55 @@ document.addEventListener("DOMContentLoaded", function () {
     // ========================================================
     // 2) ÍCONES
     // ========================================================
-    const icons = {
-        "construtora": L.icon({
-            iconUrl: "/static/img/marker-red.png",
-            iconSize: [32,40],
-            iconAnchor: [20, 40]
-        }),
-        "executor de piso": L.icon({
-            iconUrl: "/static/img/marker-yellow.png",
-            iconSize: [32, 40],
-            iconAnchor: [20, 40]
-        }),
-        "concreteira": L.icon({
-            iconUrl: "/static/img/marker-green.png",
-            iconSize: [32,40],
-            iconAnchor: [20,40]
-        }),
-        "parceiros/influenciadores": L.icon({
-            iconUrl: "/static/img/marker-blue.png",
-            iconSize: [32, 40],
-            iconAnchor: [20, 40]
-        }),
-        "outros": L.icon({
-            iconUrl: "/static/img/marker-purple.png",
-            iconSize: [32, 40],
-            iconAnchor: [20, 40]
-        }),
+    function tipoMarcadorPorSegmentacao(segmentacao) {
+        const seg = (segmentacao || "").toLowerCase().trim();
+        const tipos = {
+            "construtora": "construtora",
+            "executor de piso": "executor",
+            "concreteira": "concreteira",
+            "parceiros/influenciadores": "parceiro",
+            "outros": "outros"
+        };
 
-        "obra": L.icon({
-            iconUrl: "/static/img/marker-orange.png",
-            iconSize: [32, 30],
-            iconAnchor: [20, 40]
-        }),    
+        return tipos[seg] || "cliente";
+    }
 
-        "default": L.icon({
-            iconUrl: "/static/img/marker-grey.png",
-            iconSize: [32, 32],
-            iconAnchor: [20, 40]
-        })
-    };
+    function criarIconeMapa(tipo) {
+        return L.divIcon({
+            className: `map-marker map-marker-${tipo || "cliente"}`,
+            html: '<span class="map-marker-pin"><span class="map-marker-core"></span></span>',
+            iconSize: [34, 42],
+            iconAnchor: [17, 40],
+            popupAnchor: [0, -36]
+        });
+    }
 
 
  // ========================================================
 // 3) CLIENTES NO MAPA (COM FILTROS)
 // ========================================================
 const markersGroup = L.featureGroup().addTo(map);
+const marcadoresManuaisGroup = L.featureGroup().addTo(map);
 
 function limparClientesDoMapa() {
     markersGroup.clearLayers();
+}
+
+function filtroSegmentacaoAtivo() {
+    return !!(document.getElementById("filtroSegmentacao")?.value || "").trim();
+}
+
+function atualizarMarcadoresManuaisVisibilidade() {
+    if (filtroSegmentacaoAtivo()) {
+        if (map.hasLayer(marcadoresManuaisGroup)) {
+            map.removeLayer(marcadoresManuaisGroup);
+        }
+        return;
+    }
+
+    if (!map.hasLayer(marcadoresManuaisGroup)) {
+        marcadoresManuaisGroup.addTo(map);
+    }
 }
 
 function montarQueryFiltros() {
@@ -86,6 +87,7 @@ function montarQueryFiltros() {
 
 function carregarClientes() {
     limparClientesDoMapa();
+    atualizarMarcadoresManuaisVisibilidade();
 
     const qs = montarQueryFiltros();
 
@@ -96,14 +98,15 @@ function carregarClientes() {
             dados.forEach(c => {
                 if (!c.lat || !c.lon) return;
 
-                let icon = icons["default"];
+                let tipoMarcador = "cliente";
 
                 if (Array.isArray(c.segmentacoes) && c.segmentacoes.length > 0) {
-                    const seg = c.segmentacoes[0].toLowerCase().trim();
-                    icon = icons[seg] || icons["default"];
+                    tipoMarcador = tipoMarcadorPorSegmentacao(c.segmentacoes[0]);
                 }
 
-                const marker = L.marker([c.lat, c.lon], { icon }).addTo(markersGroup);
+                const marker = L.marker([c.lat, c.lon], {
+                    icon: criarIconeMapa(tipoMarcador)
+                }).addTo(markersGroup);
 
                 marker.bindPopup(`
                     <div style="min-width: 280px;">
@@ -161,9 +164,9 @@ document.getElementById("btnAplicarFiltros")?.addEventListener("click", () => {
 });
 
 document.getElementById("btnLimparFiltros")?.addEventListener("click", () => {
-    const st = document.getElementById("filtroStatus");
+    const sg = document.getElementById("filtroSegmentacao");
     const cd = document.getElementById("filtroCidade");
-    if (st) st.value = "";
+    if (sg) sg.value = "";
     if (cd) cd.value = "";
     carregarClientes();
 });
@@ -189,45 +192,6 @@ if (inputCidade) {
         carregarClientes();
     }, 350));
 }
-
-// ========================================================
-// 3.4) OBRAS NO MAPA
-// ========================================================
-const obrasGroup = L.featureGroup().addTo(map);
-
-function limparObrasDoMapa() {
-    obrasGroup.clearLayers();
-}
-
-function carregarObras() {
-    limparObrasDoMapa();
-
-    fetch("/api/obras/mapa/")
-        .then(res => res.json())
-        .then(dados => {
-            dados.forEach(o => {
-                if (o.lat == null || o.lon == null) return;
-
-                const marker = L.marker([o.lat, o.lon], { icon: icons["obra"] }).addTo(obrasGroup);
-
-                marker.bindPopup(`
-                    <b>Obra:</b> ${o.nome}<br>
-                    <b>Cidade:</b> ${o.cidade} - ${o.estado}<br>
-                    <b>Endereço:</b> ${o.endereco || ""} ${o.numero || ""}<br>
-                    <b>Bairro:</b> ${o.bairro || ""}<br>
-                    <b>Clientes:</b> ${(o.clientes || []).join(", ") || "Não informado"}<br><br>
-                    <a href="/obras/${o.id}/" class="btn btn-sm btn-warning">Abrir obra</a>
-                `);
-            });
-
-            console.log("Obras carregadas:", dados.length);
-        })
-        .catch((err) => {
-            console.error("Erro ao carregar obras no mapa:", err);
-        });
-}
-
-carregarObras();
 
 // ========================================================
 // BUSCAR CIDADE (QUALQUER) E CENTRALIZAR O MAPA
@@ -275,17 +239,6 @@ document.getElementById("buscaCidade")?.addEventListener("keydown", (e) => {
     }
 });
 
-// ✅ AO DIGITAR (debounce)
-const buscaCidadeInput = document.getElementById("buscaCidade");
-if (buscaCidadeInput) {
-    const debounced = debounce(() => {
-        const v = buscaCidadeInput.value.trim();
-        if (v.length >= 3) irParaCidade(v);
-    }, 700);
-
-    buscaCidadeInput.addEventListener("input", debounced);
-}
-
     // ========================================================
     // 4) MARCADORES MANUAIS – CARREGAR DO BANCO
     // ========================================================
@@ -293,7 +246,9 @@ if (buscaCidadeInput) {
         .then(res => res.json())
         .then(lista => {
             lista.forEach(m => {
-                const marker = L.marker([m.lat, m.lon], { icon: icons["default"] }).addTo(map);
+                const marker = L.marker([m.lat, m.lon], {
+                    icon: criarIconeMapa("manual")
+                }).addTo(marcadoresManuaisGroup);
 
                 marker._isManual = true;
                 marker._id = m.id;
@@ -334,7 +289,9 @@ if (buscaCidadeInput) {
             const lat = parseFloat(document.getElementById("novoLat").value);
             const lon = parseFloat(document.getElementById("novoLon").value);
 
-            const marker = L.marker([lat, lon], { icon: icons["default"] }).addTo(map);
+            const marker = L.marker([lat, lon], {
+                icon: criarIconeMapa("manual")
+            }).addTo(marcadoresManuaisGroup);
 
             marker._isManual = true;
             marker._id = null;

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from .models import Cliente, Contato, Segmentacao, OrigemCliente
-from .forms import ClienteForm, SegmentacaoForm, OrigemClienteForm, UsuarioForm
+from .models import Cliente, Contato, Segmentacao, OrigemCliente, TipoAtividade, TipoCategoriaAtividade, CRMAtividade
+from .forms import ClienteForm, SegmentacaoForm, OrigemClienteForm, UsuarioForm, TipoAtividadeForm, TipoCategoriaAtividadeForm, CRMAtividadeForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -11,6 +11,9 @@ from django.http.multipartparser import MultiPartParserError
 import requests
 import json
 import re
+import os
+import tempfile
+from pathlib import Path
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .models import MarcadorManual
@@ -28,6 +31,37 @@ from .forms import ObraForm
 from .models import AnexoObra
 from .models import PropostaPDF, PropostaPDFItem
 from django.utils.http import url_has_allowed_host_and_scheme
+
+_faster_whisper_model = None
+
+
+def get_faster_whisper_model():
+    global _faster_whisper_model
+
+    if _faster_whisper_model is None:
+        try:
+            import truststore
+            truststore.inject_into_ssl()
+        except Exception:
+            pass
+
+        from faster_whisper import WhisperModel
+
+        # Evita que variaveis de proxy quebradas do ambiente afetem o download/cache do modelo.
+        os.environ.pop("HTTP_PROXY", None)
+        os.environ.pop("HTTPS_PROXY", None)
+        os.environ.pop("http_proxy", None)
+        os.environ.pop("https_proxy", None)
+
+        _faster_whisper_model = WhisperModel(
+            settings.FASTER_WHISPER_MODEL,
+            device=settings.FASTER_WHISPER_DEVICE,
+            compute_type=settings.FASTER_WHISPER_COMPUTE_TYPE,
+        )
+
+    return _faster_whisper_model
+
+
 def index(request):
     return render(request, "index.html")
 
@@ -332,10 +366,8 @@ def sair(request):
 #--------------------------------------------------------------
 def clientes_list(request):
     clientes = Cliente.objects.all().order_by("-id")
-    obras = Obra.objects.all().order_by("-id")
     return render(request, "cadastro_clientes.html", {
         "clientes": clientes,
-        "obras": obras,
     })
 
 # ----------------------------------------------------------
@@ -500,7 +532,6 @@ def cliente_editar(request, id):
         "form": form,
         "cliente": cliente,
         "modo": "editar",
-        "obras": cliente.obras.all().order_by("-id")
     })
 
 # ----------------------------------------------------------
@@ -671,7 +702,7 @@ def api_clientes_mapa(request):
     segmentacao = (request.GET.get("segmentacao") or "").strip()
     cidade = (request.GET.get("cidade") or "").strip()
 
-    qs = Cliente.objects.all()
+    qs = Cliente.objects.prefetch_related("segmentacao").all()
 
     # só clientes com coordenadas
     qs = qs.exclude(latitude__isnull=True).exclude(longitude__isnull=True)
@@ -685,7 +716,7 @@ def api_clientes_mapa(request):
         qs = qs.filter(cidade__icontains=cidade)
 
     dados = []
-    for c in qs:
+    for c in qs.distinct().order_by("nome_interno"):
         segmentacoes = [s.nome.lower() for s in c.segmentacao.all()]
 
         dados.append({
@@ -827,6 +858,80 @@ def origemcliente_excluir(request, id):
     origem = get_object_or_404(OrigemCliente, id=id)
     origem.delete()
     return redirect("origemcliente_list")
+
+
+#--------------------------------------------------------------
+# ATIVIDADES CRUD
+#--------------------------------------------------------------
+def tipoatividade_list(request):
+    atividades = TipoAtividade.objects.all().order_by("nome")
+    return render(request, "tipoatividade_list.html", {"atividades": atividades})
+
+
+def tipoatividade_novo(request):
+    if request.method == "POST":
+        form = TipoAtividadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("tipoatividade_list")
+    else:
+        form = TipoAtividadeForm(initial={"ativo": True})
+    return render(request, "tipoatividade_form.html", {"form": form, "modo": "novo"})
+
+
+def tipoatividade_editar(request, id):
+    atividade = get_object_or_404(TipoAtividade, id=id)
+    if request.method == "POST":
+        form = TipoAtividadeForm(request.POST, instance=atividade)
+        if form.is_valid():
+            form.save()
+            return redirect("tipoatividade_list")
+    else:
+        form = TipoAtividadeForm(instance=atividade)
+    return render(request, "tipoatividade_form.html", {"form": form, "modo": "editar"})
+
+
+def tipoatividade_excluir(request, id):
+    atividade = get_object_or_404(TipoAtividade, id=id)
+    atividade.delete()
+    return redirect("tipoatividade_list")
+
+
+#--------------------------------------------------------------
+# TIPOS DE ATIVIDADE CRUD
+#--------------------------------------------------------------
+def tipocategoriaatividade_list(request):
+    tipos = TipoCategoriaAtividade.objects.all().order_by("nome")
+    return render(request, "tipocategoriaatividade_list.html", {"tipos": tipos})
+
+
+def tipocategoriaatividade_novo(request):
+    if request.method == "POST":
+        form = TipoCategoriaAtividadeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("tipocategoriaatividade_list")
+    else:
+        form = TipoCategoriaAtividadeForm(initial={"ativo": True})
+    return render(request, "tipocategoriaatividade_form.html", {"form": form, "modo": "novo"})
+
+
+def tipocategoriaatividade_editar(request, id):
+    tipo = get_object_or_404(TipoCategoriaAtividade, id=id)
+    if request.method == "POST":
+        form = TipoCategoriaAtividadeForm(request.POST, instance=tipo)
+        if form.is_valid():
+            form.save()
+            return redirect("tipocategoriaatividade_list")
+    else:
+        form = TipoCategoriaAtividadeForm(instance=tipo)
+    return render(request, "tipocategoriaatividade_form.html", {"form": form, "modo": "editar"})
+
+
+def tipocategoriaatividade_excluir(request, id):
+    tipo = get_object_or_404(TipoCategoriaAtividade, id=id)
+    tipo.delete()
+    return redirect("tipocategoriaatividade_list")
 
 
 #--------------------------------------------------------------
@@ -1112,9 +1217,153 @@ def api_marcador_manual_detalhe(request, id):
 
 
 def crm_list(request):
-    registros = CRMRegistro.objects.select_related("cliente").order_by("-criado_em")
+    if request.method == "POST":
+        form = CRMAtividadeForm(request.POST)
+        if form.is_valid():
+            atividade = form.save(commit=False)
+            if atividade.tipo and not atividade.texto:
+                atividade.texto = atividade.tipo.texto_pronto
+            atividade.save()
+            messages.success(request, "Atividade criada com sucesso!")
+            return redirect("crm_list")
+    else:
+        form = CRMAtividadeForm()
 
-    return render(request, "crm_list.html")
+    atividades = CRMAtividade.objects.select_related("tipo").filter(
+        status=CRMAtividade.STATUS_PENDENTE
+    ).order_by("-criado_em", "-id")
+    historico = CRMAtividade.objects.select_related("tipo").filter(
+        status=CRMAtividade.STATUS_CONCLUIDA
+    ).order_by("-concluido_em", "-id")
+    tipos_atividade = TipoAtividade.objects.filter(ativo=True).order_by("nome")
+    tipos_categoria_atividade = TipoCategoriaAtividade.objects.filter(ativo=True).order_by("nome")
+
+    return render(request, "crm_list.html", {
+        "form": form,
+        "atividades": atividades,
+        "historico": historico,
+        "tipos_atividade": tipos_atividade,
+        "tipos_categoria_atividade": tipos_categoria_atividade,
+    })
+
+
+@require_http_methods(["POST"])
+def crm_atividade_concluir(request, id):
+    atividade = get_object_or_404(CRMAtividade, id=id)
+    tipo_id = request.POST.get("tipo")
+
+    if tipo_id:
+        atividade.tipo = get_object_or_404(TipoAtividade, id=tipo_id)
+
+    tipo_categoria_id = request.POST.get("tipo_categoria")
+    if tipo_categoria_id:
+        atividade.tipo_categoria = get_object_or_404(TipoCategoriaAtividade, id=tipo_categoria_id)
+    else:
+        atividade.tipo_categoria = None
+
+    atividade.texto = request.POST.get("texto", atividade.texto or "")
+    atividade.status = CRMAtividade.STATUS_CONCLUIDA
+    atividade.concluido_em = timezone.now()
+    atividade.save()
+    messages.success(request, "Atividade concluida e enviada para o historico.")
+    return redirect("crm_list")
+
+
+@require_http_methods(["POST"])
+def crm_atividade_salvar_texto(request, id):
+    atividade = get_object_or_404(CRMAtividade, id=id)
+    tipo_categoria_id = request.POST.get("tipo_categoria")
+
+    if not tipo_categoria_id:
+        return JsonResponse({
+            "ok": False,
+            "error": "Selecione o Tipo antes de salvar o texto.",
+        }, status=400)
+
+    tipo_categoria = get_object_or_404(TipoCategoriaAtividade, id=tipo_categoria_id)
+    atividade.tipo_categoria = tipo_categoria
+    atividade.texto = request.POST.get("texto", "")
+
+    tipo_id = request.POST.get("tipo")
+    if tipo_id:
+        atividade.tipo = get_object_or_404(TipoAtividade, id=tipo_id)
+
+    atividade.save()
+
+    return JsonResponse({
+        "ok": True,
+        "tipo_categoria": tipo_categoria.nome,
+    })
+
+
+@require_http_methods(["POST"])
+def crm_atividade_excluir(request, id):
+    atividade = get_object_or_404(CRMAtividade, id=id)
+    atividade.delete()
+    messages.success(request, "Atividade excluida com sucesso.")
+    return redirect("crm_list")
+
+
+@require_http_methods(["POST"])
+def crm_atividade_retornar(request, id):
+    atividade = get_object_or_404(CRMAtividade, id=id)
+    atividade.status = CRMAtividade.STATUS_PENDENTE
+    atividade.concluido_em = None
+    atividade.save()
+    messages.success(request, "Atividade retornou para a lista de atividades.")
+    return redirect("crm_list")
+
+
+@require_http_methods(["POST"])
+def api_crm_transcrever_audio(request):
+    audio = request.FILES.get("audio")
+    if not audio:
+        return JsonResponse({"ok": False, "error": "Nenhum audio recebido."}, status=400)
+
+    if audio.size > settings.OPENAI_AUDIO_UPLOAD_MAX_SIZE:
+        return JsonResponse({
+            "ok": False,
+            "error": "Audio muito grande. Grave um audio menor e tente novamente.",
+        }, status=413)
+
+    suffix = Path(audio.name or "audio.webm").suffix or ".webm"
+    temp_path = None
+
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_audio:
+            for chunk in audio.chunks():
+                temp_audio.write(chunk)
+            temp_path = temp_audio.name
+
+        model = get_faster_whisper_model()
+        segments, _info = model.transcribe(
+            temp_path,
+            language="pt",
+            vad_filter=True,
+            beam_size=5,
+        )
+        texto = " ".join(segment.text.strip() for segment in segments if segment.text.strip())
+
+        return JsonResponse({
+            "ok": True,
+            "texto": texto,
+        })
+    except ImportError:
+        return JsonResponse({
+            "ok": False,
+            "error": "Instale o pacote faster-whisper para usar a transcricao local.",
+        }, status=500)
+    except Exception as e:
+        return JsonResponse({
+            "ok": False,
+            "error": f"Nao foi possivel transcrever o audio localmente: {e}",
+        }, status=500)
+    finally:
+        if temp_path:
+            try:
+                Path(temp_path).unlink(missing_ok=True)
+            except Exception:
+                pass
 
 
 # ----------------------------------------------------------
@@ -1182,7 +1431,7 @@ def api_crm_timeline(request):
 def api_clientes_busca(request):
     q = (request.GET.get("q") or "").strip()
 
-    qs = Cliente.objects.all().order_by("nome_interno")
+    qs = Cliente.objects.prefetch_related("segmentacao").all().order_by("nome_interno")
 
     if q:
         qs = qs.filter(
@@ -1195,12 +1444,14 @@ def api_clientes_busca(request):
 
     data = []
     for c in qs[:50]:
+        segs = [s.nome for s in c.segmentacao.all()]
         data.append({
             "id": c.id,
-            "nome": c.nome_interno or c.razao_social,
+            "nome": c.nome_interno or c.nome_fantasia or c.razao_social or "",
             "cnpj_cpf": c.cnpj_cpf or "",
             "cidade": c.cidade or "",
             "estado": c.estado or "",
+            "segmentacao": ", ".join(segs) if segs else "",
         })
 
     return JsonResponse(data, safe=False)
@@ -1381,6 +1632,7 @@ def api_busca_clientes(request):
 def api_obras_mapa(request):
     qs = (
         Obra.objects
+        .prefetch_related("clientes")
         .exclude(latitude__isnull=True)
         .exclude(longitude__isnull=True)
         .order_by("-id")

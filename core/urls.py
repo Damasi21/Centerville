@@ -43,6 +43,11 @@ urlpatterns = [
 
     path("crm/", views.crm_list, name="crm_list"),
     path("crm/novo/", views.crm_novo, name="crm_novo"),
+    path("crm/atividades/<int:id>/concluir/", views.crm_atividade_concluir, name="crm_atividade_concluir"),
+    path("crm/atividades/<int:id>/salvar-texto/", views.crm_atividade_salvar_texto, name="crm_atividade_salvar_texto"),
+    path("crm/atividades/<int:id>/excluir/", views.crm_atividade_excluir, name="crm_atividade_excluir"),
+    path("crm/atividades/<int:id>/retornar/", views.crm_atividade_retornar, name="crm_atividade_retornar"),
+    path("api/crm/transcrever-audio/", views.api_crm_transcrever_audio, name="api_crm_transcrever_audio"),
     path("crm/<int:id>/", views.crm_detalhe, name="crm_detalhe"),
 
 
@@ -63,6 +68,18 @@ urlpatterns = [
     path("configuracoes/origem/<int:id>/editar/", views.origemcliente_editar, name="origemcliente_editar"),
     path("configuracoes/origem/<int:id>/excluir/", views.origemcliente_excluir, name="origemcliente_excluir"),
 
+    # atividades
+    path("configuracoes/atividades/", views.tipoatividade_list, name="tipoatividade_list"),
+    path("configuracoes/atividades/novo/", views.tipoatividade_novo, name="tipoatividade_novo"),
+    path("configuracoes/atividades/<int:id>/editar/", views.tipoatividade_editar, name="tipoatividade_editar"),
+    path("configuracoes/atividades/<int:id>/excluir/", views.tipoatividade_excluir, name="tipoatividade_excluir"),
+
+    # tipos de atividade
+    path("configuracoes/tipos-atividade/", views.tipocategoriaatividade_list, name="tipocategoriaatividade_list"),
+    path("configuracoes/tipos-atividade/novo/", views.tipocategoriaatividade_novo, name="tipocategoriaatividade_novo"),
+    path("configuracoes/tipos-atividade/<int:id>/editar/", views.tipocategoriaatividade_editar, name="tipocategoriaatividade_editar"),
+    path("configuracoes/tipos-atividade/<int:id>/excluir/", views.tipocategoriaatividade_excluir, name="tipocategoriaatividade_excluir"),
+
     # usuarios
     path("configuracoes/usuarios/", views.usuario_list, name="usuario_list"),
     path("configuracoes/usuarios/novo/", views.usuario_novo, name="usuario_novo"),
@@ -82,8 +99,6 @@ urlpatterns = [
     path("obras/novo/", views.obra_nova, name="obra_nova"),
     path("obras/<int:id>/", views.obra_editar, name="obra_editar"),
     path("obras/<int:id>/excluir/", views.obra_excluir, name="obra_excluir"),
-    path("api/clientes/busca/", views.api_busca_clientes, name="api_busca_clientes"),
-
     path("obras/<int:id>/anexos/upload/", views.anexo_obra_upload, name="anexo_obra_upload"),
     path("obras/anexos/<int:id>/excluir/", views.anexo_obra_excluir, name="anexo_obra_excluir"),
     

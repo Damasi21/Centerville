@@ -1,3 +1,5 @@
+import re
+
 from django.db import models
 from django.utils import timezone
 
@@ -14,6 +16,29 @@ class Segmentacao(models.Model):
 
 class OrigemCliente(models.Model):
     nome = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nome
+
+
+class TipoCategoriaAtividade(models.Model):
+    nome = models.CharField(max_length=100, unique=True)
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["nome"]
+
+    def __str__(self):
+        return self.nome
+
+
+class TipoAtividade(models.Model):
+    nome = models.CharField(max_length=100, unique=True)
+    texto_pronto = models.TextField(blank=True, default="")
+    ativo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["nome"]
 
     def __str__(self):
         return self.nome
@@ -45,8 +70,6 @@ class Cliente(models.Model):
     origem = models.ForeignKey(OrigemCliente, on_delete=models.SET_NULL, null=True, blank=True, related_name="clientes")
 
     indicacao = models.ForeignKey("self",on_delete=models.SET_NULL,null=True,blank=True,related_name="clientes_indicados",help_text="Cliente que indicou este cadastro")
-
-    data_cadastro = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.razao_social
@@ -163,6 +186,51 @@ class CRMRegistro(models.Model):
 
     def __str__(self):
         return f"{self.cliente.nome_interno} - {self.get_perfil_display()}"
+
+
+class CRMAtividade(models.Model):
+    STATUS_PENDENTE = "pendente"
+    STATUS_CONCLUIDA = "concluida"
+    STATUS_CHOICES = [
+        (STATUS_PENDENTE, "Pendente"),
+        (STATUS_CONCLUIDA, "Concluida"),
+    ]
+
+    cliente_nome = models.CharField(max_length=150)
+    telefone = models.CharField(max_length=30, blank=True, null=True)
+    tipo = models.ForeignKey(
+        TipoAtividade,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="crm_atividades"
+    )
+    tipo_categoria = models.ForeignKey(
+        TipoCategoriaAtividade,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="crm_atividades"
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDENTE)
+    texto = models.TextField(blank=True, default="")
+    criado_em = models.DateTimeField(auto_now_add=True)
+    concluido_em = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-criado_em", "-id"]
+
+    def __str__(self):
+        return f"{self.cliente_nome} - {self.get_status_display()}"
+
+    @property
+    def whatsapp_url(self):
+        digitos = re.sub(r"\D", "", self.telefone or "")
+        if len(digitos) in (10, 11):
+            digitos = f"55{digitos}"
+        if not digitos:
+            return ""
+        return f"https://wa.me/{digitos}"
 
 
 # ---------------------- PROPOSTAS IMPORTADAS DE PDF ----------------------

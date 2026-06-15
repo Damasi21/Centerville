@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Tipos de Atividade{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h3 class="fw-bold mb-3">
+        {% if modo == "editar" %}Editar Tipo de Atividade{% else %}Novo Tipo de Atividade{% endif %}
+    </h3>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Nome</label>
+            {{ form.nome }}
+            {% if form.nome.errors %}
+                <div class="text-danger small">{{ form.nome.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-check mb-4">
+            {{ form.ativo }}
+            <label class="form-check-label" for="{{ form.ativo.id_for_label }}">Ativo</label>
+        </div>
+
+        <div class="mt-4">
+            <button class="btn btn-primary">Salvar</button>
+            <a href="{% url 'tipocategoriaatividade_list' %}" class="btn btn-secondary">Cancelar</a>
+
+            {% if modo == "editar" %}
+            <a href="{% url 'tipocategoriaatividade_excluir' form.instance.id %}" class="btn btn-danger float-end">
+                Excluir
+            </a>
+            {% endif %}
+        </div>
+    </form>
+
+</div>
+{% endblock %}

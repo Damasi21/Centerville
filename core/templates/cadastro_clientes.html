@@ -16,9 +16,7 @@
             <button id="btnIncluir"
                     class="btn btn-primary me-2"
                     type="button"
-                    data-cliente-url="{% url 'cliente_novo' %}"
-                    data-obra-url="{% url 'obra_nova' %}"
-                    onclick="window.location.href=document.getElementById('tab-obras').classList.contains('active') ? this.dataset.obraUrl : this.dataset.clienteUrl">
+                    data-cliente-url="{% url 'cliente_novo' %}">
                 <i class="bi bi-plus-circle"></i> Incluir
             </button>
             <button id="btnImportar" class="btn btn-outline-secondary" type="button">
@@ -30,115 +28,54 @@
         </div>
     </div>
 
-    <ul class="nav nav-tabs mb-3" id="cadastroTabs">
-        <li class="nav-item">
-            <button class="nav-link active" id="tab-clientes" data-bs-toggle="tab" data-bs-target="#aba-clientes">
-                Clientes
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" id="tab-obras" data-bs-toggle="tab" data-bs-target="#aba-obras">
-                Obras
-            </button>
-        </li>
-    </ul>
-
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="aba-clientes">
-            <div class="table-responsive shadow-sm rounded bg-white p-3">
-                <table class="table table-hover align-middle" id="tabela-clientes">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 55px;">#</th>
-                            <th>Tags</th>
-                            <th>CNPJ / CPF</th>
-                            <th>Nome Interno</th>
-                            <th>Nome Fantasia</th>
-                            <th>Cidade</th>
-                        </tr>
-                        <tr>
-                            <th style="width: 55px;">
-                                <input type="text" class="form-control form-control-sm filtro-coluna" data-col="0">
-                            </th>
-                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="1"></th>
-                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="2"></th>
-                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="3"></th>
-                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="4"></th>
-                            <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="5"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for c in clientes %}
-                        <tr class="linha-cliente"
-                            data-url="{% url 'cliente_editar' c.id %}"
-                            ondblclick="window.location.href=this.dataset.url"
-                            style="cursor: pointer;">
-                            <td>{{ forloop.counter }}</td>
-                            <td>
-                                {% for tag in c.segmentacao.all %}
-                                    <span class="badge bg-info text-dark">{{ tag.nome }}</span>
-                                {% endfor %}
-                            </td>
-                            <td>{{ c.cnpj_cpf }}</td>
-                            <td>{{ c.nome_interno }}</td>
-                            <td>{{ c.nome_fantasia }}</td>
-                            <td>{{ c.cidade }}{% if c.estado %} ({{ c.estado }}){% endif %}</td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-3">
-                                Nenhum cliente cadastrado ainda.
-                            </td>
-                        </tr>
+    <div class="table-responsive shadow-sm rounded bg-white p-3">
+        <table class="table table-hover align-middle" id="tabela-clientes">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 55px;">#</th>
+                    <th>Tags</th>
+                    <th>CNPJ / CPF</th>
+                    <th>Nome Interno</th>
+                    <th>Nome Fantasia</th>
+                    <th>Cidade</th>
+                </tr>
+                <tr>
+                    <th style="width: 55px;">
+                        <input type="text" class="form-control form-control-sm filtro-coluna" data-col="0">
+                    </th>
+                    <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="1"></th>
+                    <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="2"></th>
+                    <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="3"></th>
+                    <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="4"></th>
+                    <th><input type="text" class="form-control form-control-sm filtro-coluna" data-col="5"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in clientes %}
+                <tr class="linha-cliente"
+                    data-url="{% url 'cliente_editar' c.id %}"
+                    ondblclick="window.location.href=this.dataset.url"
+                    style="cursor: pointer;">
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        {% for tag in c.segmentacao.all %}
+                            <span class="badge bg-info text-dark">{{ tag.nome }}</span>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="aba-obras">
-            <div class="table-responsive shadow-sm rounded bg-white p-3">
-                <table class="table table-hover align-middle" id="tabela-obras">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:60px">#</th>
-                            <th>Nome da Obra</th>
-                            <th>Cidade</th>
-                            <th>Clientes Envolvidos</th>
-                        </tr>
-                        <tr>
-                            <th style="width:60px"><input type="text" class="form-control form-control-sm filtro-obra" data-col="0"></th>
-                            <th><input type="text" class="form-control form-control-sm filtro-obra" data-col="1"></th>
-                            <th><input type="text" class="form-control form-control-sm filtro-obra" data-col="2"></th>
-                            <th><input type="text" class="form-control form-control-sm filtro-obra" data-col="3"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for o in obras %}
-                        <tr class="linha-obra"
-                            data-url="{% url 'obra_editar' o.id %}"
-                            ondblclick="window.location.href=this.dataset.url"
-                            style="cursor:pointer;">
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ o.nome }}</td>
-                            <td>{{ o.cidade }} ({{ o.estado }})</td>
-                            <td>
-                                {% for c in o.clientes.all %}
-                                    <span class="badge bg-secondary">{{ c.nome_interno }}</span>
-                                {% endfor %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="text-center text-muted py-3">
-                                Nenhuma obra cadastrada ainda.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                    </td>
+                    <td>{{ c.cnpj_cpf }}</td>
+                    <td>{{ c.nome_interno }}</td>
+                    <td>{{ c.nome_fantasia }}</td>
+                    <td>{{ c.cidade }}{% if c.estado %} ({{ c.estado }}){% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-3">
+                        Nenhum cliente cadastrado ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}

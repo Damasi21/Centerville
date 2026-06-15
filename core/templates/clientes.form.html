@@ -297,39 +297,6 @@
         </div>
 
 
-        <div class="accordion-item mb-4">
-            <div class="accordion-header" onclick="toggleSection('obras-bloco', this)">
-                <span class="toggle-icon">+</span> Obras
-            </div>
-
-            <div id="obras-bloco" class="accordion-content">
-
-                {% if cliente %}
-                {% for obra in cliente.obras.all %}
-                    <div class="border rounded p-2 mb-2">
-                    <div class="fw-semibold">{{ obra.nome }}</div>
-                    <div class="small text-muted">
-                        {{ obra.cidade }}{% if obra.estado %} ({{ obra.estado }}){% endif %}
-                    </div>
-
-                    <div class="mt-2">
-                        <a class="btn btn-sm btn-outline-primary" href="/obras/{{ obra.id }}/">
-                        Abrir obra
-                        </a>
-                    </div>
-                    </div>
-                {% empty %}
-                    <p class="text-muted mb-0">Nenhuma obra vinculada a este cliente.</p>
-                {% endfor %}
-                {% else %}
-                <p class="text-muted mb-0">Salve o cliente para visualizar as obras vinculadas.</p>
-                {% endif %}
-
-            </div>
-        </div>
-
-
-
         <!-- ==============CRM================================ -->
 
 

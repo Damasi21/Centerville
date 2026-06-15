@@ -5,76 +5,263 @@
 
 {% block content %}
 <div class="container-fluid mt-3">
-  <div class="row g-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0 text-secondary">CRM</h3>
+        <a href="{% url 'configuracoes' %}" class="btn btn-outline-dark">
+            <i class="bi bi-gear"></i> Configuracoes
+        </a>
+    </div>
 
-    <!-- ESQUERDA (33%): WHATSAPP -->
-    <div class="col-md-4">
-      <div class="border p-3 h-100">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="mb-0">WhatsApp</h5>
-          <button class="btn btn-outline-success btn-sm" id="btnAtualizarWpp">Atualizar</button>
+    <form method="POST" class="row g-2 align-items-end bg-white border rounded shadow-sm p-3 mb-4">
+        {% csrf_token %}
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">{{ form.cliente_nome.label }}</label>
+            {{ form.cliente_nome }}
+            {% if form.cliente_nome.errors %}
+                <div class="text-danger small">{{ form.cliente_nome.errors|join:", " }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">{{ form.telefone.label }}</label>
+            {{ form.telefone }}
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">{{ form.tipo.label }}</label>
+            <select name="tipo" id="id_tipo" class="form-select crm-tipo-select">
+                <option value="" data-texto="">---------</option>
+                {% for tipo in tipos_atividade %}
+                    <option value="{{ tipo.id }}" data-texto="{{ tipo.texto_pronto|escape }}">{{ tipo.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-plus-circle"></i> Incluir
+            </button>
+        </div>
+        <div class="col-12">
+            <label class="form-label fw-semibold">{{ form.texto.label }}</label>
+            {{ form.texto }}
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom">
+        <ul class="nav nav-tabs border-0" id="crmTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="atividades-tab" data-bs-toggle="tab" data-bs-target="#atividades-pane" type="button" role="tab">
+                    Atividades
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico-pane" type="button" role="tab">
+                    Historico
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="atividades-pane" role="tabpanel" aria-labelledby="atividades-tab">
+            <div class="table-responsive shadow-sm rounded bg-white p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th>Cliente</th>
+                            <th style="width: 210px;">Telefone</th>
+                            <th style="width: 420px;">Atividade</th>
+                            <th style="width: 190px;">Tipo</th>
+                            <th style="width: 170px;">Criada em</th>
+                            <th style="width: 110px;">Status</th>
+                            <th style="width: 110px;"></th>
+                            <th style="width: 92px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for atividade in atividades %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-semibold">{{ atividade.cliente_nome }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>{{ atividade.telefone|default:"-" }}</span>
+                                    {% if atividade.whatsapp_url %}
+                                    <a class="btn btn-sm btn-success" href="{{ atividade.whatsapp_url }}" target="_blank" rel="noopener" title="Abrir WhatsApp">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <form method="POST"
+                                      id="form-crm-atividade-{{ atividade.id }}"
+                                      action="{% url 'crm_atividade_concluir' atividade.id %}"
+                                      data-salvar-texto-url="{% url 'crm_atividade_salvar_texto' atividade.id %}">
+                                    {% csrf_token %}
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <select name="tipo"
+                                                class="form-select form-select-sm crm-tipo-select {% if atividade.texto %}crm-select-bloqueado{% endif %}"
+                                                data-valor-bloqueado="{{ atividade.tipo_id|default:'' }}">
+                                            <option value="" data-texto="">Selecione</option>
+                                            {% for tipo in tipos_atividade %}
+                                                <option value="{{ tipo.id }}" data-texto="{{ tipo.texto_pronto|escape }}" {% if atividade.tipo_id == tipo.id %}selected{% endif %}>{{ tipo.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="btn btn-sm btn-outline-secondary crm-texto-btn" type="button" title="Abrir texto da atividade">
+                                            <i class="bi bi-journal-text"></i>
+                                        </button>
+                                    </div>
+                                    <textarea name="texto" class="d-none crm-texto-atividade">{{ atividade.texto }}</textarea>
+                                </form>
+                            </td>
+                            <td>
+                                <select name="tipo_categoria"
+                                        class="form-select form-select-sm crm-tipo-categoria-select"
+                                        form="form-crm-atividade-{{ atividade.id }}">
+                                    <option value="">Tipo</option>
+                                    {% for tipo_categoria in tipos_categoria_atividade %}
+                                        <option value="{{ tipo_categoria.id }}" {% if atividade.tipo_categoria_id == tipo_categoria.id %}selected{% endif %}>
+                                            {{ tipo_categoria.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>{{ atividade.criado_em|date:"d/m/Y H:i" }}</td>
+                            <td class="small crm-status-texto">
+                                {% if atividade.texto %}
+                                    <span class="badge bg-primary">Salvo</span>
+                                {% else %}
+                                    <span class="text-muted">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success" type="submit" form="form-crm-atividade-{{ atividade.id }}">
+                                    Concluir
+                                </button>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <button class="btn btn-sm btn-outline-primary crm-editar-tipo-btn" type="button" title="Editar atividade">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <form method="POST"
+                                          action="{% url 'crm_atividade_excluir' atividade.id %}"
+                                          onsubmit="return confirm('Deseja realmente excluir esta atividade?');">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-outline-danger" type="submit" title="Excluir atividade">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-3">
+                                Nenhuma atividade pendente.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <input class="form-control mb-3" id="buscaContatos" placeholder="Pesquisar conversa (nome, telefone, texto) ...">
-
-        <div id="listaConversas" class="d-flex flex-column gap-2"></div>
-      </div>
-    </div>
-
-    <!-- DIREITA (67%): AÇÕES + TIMELINE -->
-    <div class="col-md-8">
-      <div class="border p-3 h-100">
-
-        <!-- Botões lineares (topo) -->
-        <div class="d-flex flex-wrap gap-2 mb-3">
-          <button class="btn btn-outline-success" id="btnPropostas">PROPOSTA</button>
-          <button class="btn btn-outline-success" id="btnForms">FORMS</button>
-          <button class="btn btn-outline-success" id="btnTarefas">TAREFAS</button>
-          <button class="btn btn-outline-success" id="btnOutros">OUTROS</button>
+        <div class="tab-pane fade" id="historico-pane" role="tabpanel" aria-labelledby="historico-tab">
+            <div class="table-responsive shadow-sm rounded bg-white p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th>Cliente</th>
+                            <th style="width: 210px;">Telefone</th>
+                            <th>Atividade</th>
+                            <th style="width: 160px;">Tipo</th>
+                            <th style="width: 70px;">Texto</th>
+                            <th style="width: 170px;">Concluida em</th>
+                            <th style="width: 64px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for atividade in historico %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-semibold">{{ atividade.cliente_nome }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span>{{ atividade.telefone|default:"-" }}</span>
+                                    {% if atividade.whatsapp_url %}
+                                    <a class="btn btn-sm btn-success" href="{{ atividade.whatsapp_url }}" target="_blank" rel="noopener" title="Abrir WhatsApp">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ atividade.tipo.nome|default:"-" }}</td>
+                            <td>{{ atividade.tipo_categoria.nome|default:"-" }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-secondary crm-texto-btn"
+                                        type="button"
+                                        title="Ver texto"
+                                        data-readonly="true"
+                                        data-texto="{{ atividade.texto|escape }}">
+                                    <i class="bi bi-journal-text"></i>
+                                </button>
+                            </td>
+                            <td>{{ atividade.concluido_em|date:"d/m/Y H:i" }}</td>
+                            <td class="text-end">
+                                <form method="POST" action="{% url 'crm_atividade_retornar' atividade.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-secondary" type="submit" title="Retornar para atividades">
+                                        <img src="/media/retorno.png" alt="Retornar" style="width: 18px; height: 18px;">
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted py-3">
+                                Nenhuma atividade concluida ainda.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <!-- Busca por cliente na timeline -->
-        <input class="form-control mb-3" id="buscaClienteTimeline" placeholder="Buscar cliente na timeline ...">
-
-        <div class="text-center fw-bold my-2">TIMELINE</div>
-
-        <div id="timelineAtividades" class="d-flex flex-column gap-2"
-             style="max-height: 620px; overflow:auto;"></div>
-      </div>
     </div>
-
-  </div>
 </div>
 
-<!-- MODAL: Conversa completa -->
-<div class="modal fade" id="modalConversa" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalConversaTitulo">Conversa</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="modalConversaBody" style="min-height: 200px;"></div>
+<div class="modal fade" id="modalTextoAtividade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Texto da atividade</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea id="modalTextoAtividadeCampo" class="form-control" rows="8" placeholder="Digite o texto da atividade"></textarea>
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <button type="button"
+                            class="btn btn-outline-danger"
+                            id="modalTextoAtividadeMic"
+                            data-url="{% url 'api_crm_transcrever_audio' %}">
+                        <i class="bi bi-mic"></i> Gravar audio
+                    </button>
+                    <span class="small text-muted" id="modalTextoAtividadeMicStatus"></span>
+                </div>
+                <div class="alert alert-warning d-none mt-3 mb-0" id="modalTextoAtividadeMicErro"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" id="modalTextoAtividadeSalvar">Salvar texto</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
-
-<!-- MODAL: Visualizar atividade da timeline -->
-<div class="modal fade" id="modalAtividade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalAtividadeTitulo">Atividade</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="modalAtividadeBody"></div>
-    </div>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block scripts %}
 {{ block.super }}
-<script src="{% static 'js/whats.js' %}"></script>
+<script src="{% static 'js/crm_atividades.js' %}"></script>
 {% endblock %}
