@@ -141,7 +141,18 @@ document.addEventListener("DOMContentLoaded", () => {
             headers: {"X-CSRFToken": getCsrfToken()},
             body: formData,
         });
-        const payload = await response.json().catch(() => ({}));
+        const responseText = await response.text();
+        let payload = {};
+
+        try {
+            payload = responseText ? JSON.parse(responseText) : {};
+        } catch (error) {
+            payload = {
+                error: responseText
+                    ? `HTTP ${response.status}: ${responseText.slice(0, 240).replace(/\s+/g, " ")}`
+                    : `HTTP ${response.status}: resposta vazia do servidor`,
+            };
+        }
 
         if (!response.ok || !payload.ok) {
             throw new Error(payload.error || "Nao foi possivel transcrever o audio.");

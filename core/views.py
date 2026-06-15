@@ -13,6 +13,7 @@ import json
 import re
 import os
 import tempfile
+import logging
 from pathlib import Path
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -33,6 +34,7 @@ from .models import PropostaPDF, PropostaPDFItem
 from django.utils.http import url_has_allowed_host_and_scheme
 
 _faster_whisper_model = None
+logger = logging.getLogger(__name__)
 
 
 def get_faster_whisper_model():
@@ -1220,10 +1222,7 @@ def crm_list(request):
     if request.method == "POST":
         form = CRMAtividadeForm(request.POST)
         if form.is_valid():
-            atividade = form.save(commit=False)
-            if atividade.tipo and not atividade.texto:
-                atividade.texto = atividade.tipo.texto_pronto
-            atividade.save()
+            form.save()
             messages.success(request, "Atividade criada com sucesso!")
             return redirect("crm_list")
     else:
@@ -1354,6 +1353,7 @@ def api_crm_transcrever_audio(request):
             "error": "Instale o pacote faster-whisper para usar a transcricao local.",
         }, status=500)
     except Exception as e:
+        logger.exception("Erro ao transcrever audio localmente")
         return JsonResponse({
             "ok": False,
             "error": f"Nao foi possivel transcrever o audio localmente: {e}",

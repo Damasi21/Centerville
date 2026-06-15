@@ -192,12 +192,11 @@ class TipoCategoriaAtividadeForm(forms.ModelForm):
 class CRMAtividadeForm(forms.ModelForm):
     class Meta:
         model = CRMAtividade
-        fields = ["cliente_nome", "telefone", "tipo", "texto"]
+        fields = ["cliente_nome", "telefone", "tipo_categoria"]
         labels = {
             "cliente_nome": "Cliente",
             "telefone": "Telefone",
-            "tipo": "Atividade",
-            "texto": "Texto",
+            "tipo_categoria": "Tipo",
         }
         widgets = {
             "cliente_nome": forms.TextInput(attrs={
@@ -208,17 +207,12 @@ class CRMAtividadeForm(forms.ModelForm):
                 "class": "form-control",
                 "placeholder": "(00) 00000-0000",
             }),
-            "tipo": forms.Select(attrs={"class": "form-select"}),
-            "texto": forms.Textarea(attrs={
-                "class": "form-control",
-                "rows": 3,
-                "placeholder": "Texto da atividade",
-            }),
+            "tipo_categoria": forms.Select(attrs={"class": "form-select"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["tipo"].queryset = TipoAtividade.objects.filter(ativo=True).order_by("nome")
+        self.fields["tipo_categoria"].queryset = TipoCategoriaAtividade.objects.filter(ativo=True).order_by("nome")
 
 
 class UsuarioForm(forms.ModelForm):

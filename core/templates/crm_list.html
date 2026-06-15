@@ -26,22 +26,13 @@
             {{ form.telefone }}
         </div>
         <div class="col-md-3">
-            <label class="form-label fw-semibold">{{ form.tipo.label }}</label>
-            <select name="tipo" id="id_tipo" class="form-select crm-tipo-select">
-                <option value="" data-texto="">---------</option>
-                {% for tipo in tipos_atividade %}
-                    <option value="{{ tipo.id }}" data-texto="{{ tipo.texto_pronto|escape }}">{{ tipo.nome }}</option>
-                {% endfor %}
-            </select>
+            <label class="form-label fw-semibold">{{ form.tipo_categoria.label }}</label>
+            {{ form.tipo_categoria }}
         </div>
         <div class="col-md-2 d-grid">
             <button class="btn btn-primary" type="submit">
                 <i class="bi bi-plus-circle"></i> Incluir
             </button>
-        </div>
-        <div class="col-12">
-            <label class="form-label fw-semibold">{{ form.texto.label }}</label>
-            {{ form.texto }}
         </div>
     </form>
 
