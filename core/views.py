@@ -56,9 +56,9 @@ def get_faster_whisper_model():
         os.environ.pop("https_proxy", None)
 
         _faster_whisper_model = WhisperModel(
-            settings.FASTER_WHISPER_MODEL,
-            device=settings.FASTER_WHISPER_DEVICE,
-            compute_type=settings.FASTER_WHISPER_COMPUTE_TYPE,
+            getattr(settings, "FASTER_WHISPER_MODEL", "base"),
+            device=getattr(settings, "FASTER_WHISPER_DEVICE", "cpu"),
+            compute_type=getattr(settings, "FASTER_WHISPER_COMPUTE_TYPE", "int8"),
         )
 
     return _faster_whisper_model
@@ -1319,7 +1319,8 @@ def api_crm_transcrever_audio(request):
     if not audio:
         return JsonResponse({"ok": False, "error": "Nenhum audio recebido."}, status=400)
 
-    if audio.size > settings.OPENAI_AUDIO_UPLOAD_MAX_SIZE:
+    audio_upload_max_size = getattr(settings, "FASTER_WHISPER_AUDIO_UPLOAD_MAX_SIZE", 10 * 1024 * 1024)
+    if audio.size > audio_upload_max_size:
         return JsonResponse({
             "ok": False,
             "error": "Audio muito grande. Grave um audio menor e tente novamente.",
